@@ -1,5 +1,8 @@
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuroraBackground } from "@/components/ui/aurora-background";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,10 +23,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuroraBackground>
+          {children}
+        </AuroraBackground>
       </body>
     </html>
   );

@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
 
 :root {
   --background: #ffffff;
@@ -24,4 +26,15 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.aurora-bg {
+  background: linear-gradient(135deg, #667eea, #764ba2, #6b7280);
+  background-size: 200% 200%;
+  animation: aurora 10s ease infinite;
+}
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
