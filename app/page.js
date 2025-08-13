@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/ui/navbar-menu";
-import NewArrivals from "@/components/NewArrivals";
+import NewArrivals from "@/components/newArrivals";
 
 import { HeroParallaxDemo } from "@/components/hero-parallax-demo";
 
