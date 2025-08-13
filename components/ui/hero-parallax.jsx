@@ -33,7 +33,7 @@ export const HeroParallax = ({ products }) => {
     );
 
     return (
-        <section ref={ref} className="relative h-[270vh] md:h-[130vh] overflow-hidden">
+        <section ref={ref} className="relative h-[260vh] md:h-[140vh] overflow-hidden">
             {/* HERO CONTENT */}
             <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 bg-white dark:bg-black">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white text-center md:text-left">
