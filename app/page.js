@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/ui/navbar-menu";
 import NewArrivals from "@/components/newArrivals";
-
 import { HeroParallaxDemo } from "@/components/hero-parallax-demo";
+import { MarqueeDemo } from "@/components/MarqueeDemo";
 
 export default function Home() {
   return (
@@ -24,6 +24,12 @@ export default function Home() {
             </p>
           </div>
         </section>
+
+        <h2 className="text-2xl font-bold mb-6 text-center text-black dark:text-white  h-10 w-25">
+              Reviews
+            </h2>
+
+        <MarqueeDemo/>
         
       </main>
     </div>

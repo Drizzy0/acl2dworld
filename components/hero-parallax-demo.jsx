@@ -29,9 +29,5 @@ export const products = [
     link: "/products/summer-dress",
     thumbnail: "/images/IMG_7105.jpg",
   },
-  {
-    title: "Leather Boots",
-    link: "/products/leather-boots",
-    thumbnail: "/images/replace3.HEIC",
-  },
+ 
 ];

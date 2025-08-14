@@ -48,8 +48,21 @@ export const newArrivals = [
       name: "Leather Boots",
       price: 89.99,
       images: [
-        "/images/replace3.jpg", 
-        "/images/boots-side.jpg",
+        "images/IMG_2379.PNG",
+        "images/IMG_2379.PNG",
+        "images/IMG_2379.PNG",
+        
+      ],
+    },
+    {
+      id: 6,
+      name: "Denim Jacket",
+      price: 59.99,
+      images: [
+        "/images/IMG_2377.PNG", 
+        "/images/IMG_2377.PNG", 
+        "/images/IMG_2377.PNG", 
+       
       ],
     },
   ];

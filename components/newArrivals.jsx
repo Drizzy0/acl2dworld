@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Slider from "react-slick";
-import { newArrivals } from "@/data/newArrivals"; // Adjust path as needed
+import { newArrivals } from "@/data/newArrivals"; 
 
 const NewArrivals = () => {
     const [selectedItem, setSelectedItem] = useState(null);
@@ -12,7 +12,7 @@ const NewArrivals = () => {
     return (
         <section className="py-12">
             <div className="max-w-7xl mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">
+                <h2 className="text-4xl font-bold text-center mb-8 dark:text-white">
                     New Arrivals
                 </h2>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -25,7 +25,7 @@ const NewArrivals = () => {
                             <img
                                 src={item.images[0]}
                                 alt={item.name}
-                                className="w-full h-48 sm:h-70 md:h-64 object-cover"
+                                className="w-full h-48 sm:h-98 md:h-64 border"
                             />
                             <div className="pt-2 text-center">
                                 <h3 className="text-base sm:text-lg font-semibold dark:text-white">
