@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ShoppingCart, User, Menu as MenuIcon, X } from "lucide-react"; // Renamed Menu to MenuIcon
+import { ShoppingCart, User, Menu as MenuIcon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const transition = {
     type: "spring",
@@ -17,7 +18,7 @@ export const MenuItem = ({ setActive, active, item, children }) => {
         <div onMouseEnter={() => setActive(item)} className="relative">
             <motion.p
                 transition={{ duration: 0.3 }}
-                className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white"
+                className="cursor-pointer text-foreground hover:text-primary dark:text-foreground dark:hover:text-primary"
             >
                 {item}
             </motion.p>
@@ -32,7 +33,7 @@ export const MenuItem = ({ setActive, active, item, children }) => {
                             <motion.div
                                 transition={transition}
                                 layoutId="active"
-                                className="bg-white dark:bg-black backdrop-blur-sm rounded-2xl overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
+                                className="bg-background dark:bg-background backdrop-blur-sm rounded-2xl overflow-hidden border border-border shadow-xl"
                             >
                                 <motion.div layout className="w-max h-full p-4">
                                     {children}
@@ -68,10 +69,10 @@ export const ProductItem = ({ title, description, href, src }) => {
                 className="shrink-0 rounded-md shadow-2xl"
             />
             <div>
-                <h4 className="text-xl font-bold mb-1 text-black dark:text-white">
+                <h4 className="text-xl font-bold mb-1 text-foreground dark:text-foreground">
                     {title}
                 </h4>
-                <p className="text-neutral-700 text-sm max-w-[10rem] dark:text-neutral-300">
+                <p className="text-muted-foreground text-sm max-w-[10rem] dark:text-muted-foreground">
                     {description}
                 </p>
             </div>
@@ -83,7 +84,7 @@ export const HoveredLink = ({ children, ...rest }) => {
     return (
         <a
             {...rest}
-            className="text-neutral-700 dark:text-neutral-200 hover:text-black block py-1"
+            className="text-muted-foreground dark:text-muted-foreground hover:text-primary block py-1"
         >
             {children}
         </a>
@@ -99,19 +100,36 @@ export const Navbar = () => {
     };
 
     return (
-        <nav className="w-full flex justify-between items-center px-4 py-4 bg-white dark:bg-black shadow-md md:px-8">
+        <nav
+            className={cn(
+                "sticky top-0 z-50 flex justify-between items-center px-2 py-2",
+                "bg-green-950/50 backdrop-blur-sm border-b border-border",
+                "text-foreground dark:bg-blue-950/95 dark:text-foreground",
+                "md:px-8"
+            )}
+        >
             {/* Left: Logo */}
-            <div className="flex items-center space-x-2">
-                <img src="/images/acl_logo.jpg" alt="Logo" className="h-10 w-15 ms-2 object-cover" />
-                <span className="text-xl font-bold text-black dark:text-white">
-                    {/* ACL2dWorld  */}
+            <div className="flex items-center space-x-1">
+                <img
+                    src="/images/newest.PNG"
+                    alt="Logo"
+                    className="h-10 w-15 ms-2 object-cover"
+
+                />
+                <span className="text-sm font-mono font-normal text-foreground dark:text-foreground ">
+                    Air Clothing Line
                 </span>
             </div>
 
             {/* Center: Menu Links (Hidden on mobile, shown on md and up) */}
             <div
-                className={`${isMobileMenuOpen ? "flex" : "hidden"
-                    } md:flex absolute md:static top-16 left-0 w-full md:w-auto bg-white dark:bg-black md:bg-transparent dark:md:bg-transparent flex-col md:flex-row items-center px-4 md:px-0 py-4 md:py-0 shadow-md md:shadow-none z-10`}
+                className={cn(
+                    "absolute md:static top-16 left-0 w-full md:w-auto",
+                    "flex-col md:flex-row items-center px-4 md:px-0 py-4 md:py-0",
+                    "bg-blue-900/95 dark:bg-blue-950/95 md:bg-transparent dark:md:bg-transparent",
+                    "shadow-md md:shadow-none z-10",
+                    { flex: isMobileMenuOpen, hidden: !isMobileMenuOpen }
+                )}
             >
                 <Menu setActive={setActive}>
                     <MenuItem setActive={setActive} active={active} item="Home">
@@ -141,10 +159,10 @@ export const Navbar = () => {
 
             {/* Right: Icons and Hamburger */}
             <div className="flex items-center space-x-4">
-                <ShoppingCart className="cursor-pointer text-black dark:text-white" />
-                <User className="cursor-pointer text-black dark:text-white" />
+                <ShoppingCart className="cursor-pointer text-foreground dark:text-foreground" />
+                <User className="cursor-pointer text-foreground dark:text-foreground" />
                 <button
-                    className="md:hidden text-black dark:text-white"
+                    className="md:hidden text-foreground dark:text-foreground"
                     onClick={toggleMobileMenu}
                 >
                     {isMobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}

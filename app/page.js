@@ -2,6 +2,7 @@ import { Navbar } from "@/components/ui/navbar-menu";
 import NewArrivals from "@/components/newArrivals";
 import { HeroParallaxDemo } from "@/components/hero-parallax-demo";
 import { MarqueeDemo } from "@/components/MarqueeDemo";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
@@ -30,6 +31,8 @@ export default function Home() {
             </h2>
 
         <MarqueeDemo/>
+
+        <Footer />
         
       </main>
     </div>
