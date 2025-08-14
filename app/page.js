@@ -32,6 +32,8 @@ export default function Home() {
 
         <MarqueeDemo/>
 
+       
+
         <Footer />
         
       </main>
