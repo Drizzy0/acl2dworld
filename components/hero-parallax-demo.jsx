@@ -17,12 +17,12 @@ export const products = [
   {
     title: "",
     link: "/products/denim-jacket",
-    thumbnail: "/images/num1.jpg",
+    thumbnail: "/images/num3.jpg",
   },
   {
     title: "",
     link: "/products/slim-jeans",
-    thumbnail: "/images/num3.jpg",
+    thumbnail: "/images/num1.jpg",
   },
  
  
