@@ -25,7 +25,7 @@ const NewArrivals = () => {
                             <img
                                 src={item.images[0]}
                                 alt={item.name}
-                                className="w-full h-48 sm:h-98 md:h-64 border-2"
+                                className="w-full h-35 sm:h-68 md:h-50 border-2"
                             />
                             <div className="pt-2 text-center">
                                 <h3 className="text-base sm:text-sm font-normal dark:text-white">
