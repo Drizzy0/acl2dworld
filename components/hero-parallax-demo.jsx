@@ -17,7 +17,7 @@ export const products = [
   {
     title: "",
     link: "/products/denim-jacket",
-    thumbnail: "/images/num3.jpg",
+    thumbnail: "/images/pleasework.jpg",
   },
   {
     title: "",
