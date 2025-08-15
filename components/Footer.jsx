@@ -2,12 +2,11 @@ import { cn } from "@/lib/utils";
 
 export function Footer() {
   return (
-    <footer 
-      className= {cn(
-        "bg-green-950/50 backdrop-blur-sm text-foreground py-8 my-15 border-t border-border",
+    <footer
+      className={cn(
+        "w-screen -mx-[calc(50vw-50%)] bg-green-950/50 backdrop-blur-sm text-foreground py-8 border-t border-border",
         "dark:bg-blue-950/95 dark:text-foreground"
       )}
-     
     >
       <div className="w-full px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -29,7 +28,10 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/products" className="hover:text-primary transition-colors">
+                <a
+                  href="/products"
+                  className="hover:text-primary transition-colors"
+                >
                   Products
                 </a>
               </li>
@@ -39,7 +41,10 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/contact" className="hover:text-primary transition-colors">
+                <a
+                  href="/contact"
+                  className="hover:text-primary transition-colors"
+                >
                   Contact
                 </a>
               </li>
