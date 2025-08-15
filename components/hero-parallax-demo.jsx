@@ -10,24 +10,20 @@ export function HeroParallaxDemo() {
 
 export const products = [
   {
-    title: "Classic White Shirt",
+    title: "",
     link: "/products/white-shirt",
-    thumbnail: "/images/car1.JPG",
+    thumbnail: "/images/num3.JPG",
   },
   {
-    title: "Denim Jacket",
+    title: "",
     link: "/products/denim-jacket",
-    thumbnail: "/images/car4.JPG",
+    thumbnail: "/images/num2.JPG",
   },
   {
-    title: "Black Slim Jeans",
+    title: "",
     link: "/products/slim-jeans",
-    thumbnail: "/images/IMG_7104.jpg",
+    thumbnail: "/images/num1.jpg",
   },
-  {
-    title: "Summer Dress",
-    link: "/products/summer-dress",
-    thumbnail: "/images/IMG_7105.jpg",
-  },
+ 
  
 ];

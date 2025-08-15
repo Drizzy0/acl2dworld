@@ -33,7 +33,7 @@ export const HeroParallax = ({ products }) => {
     );
 
     return (
-        <section ref={ref} className="relative h-[220vh] md:h-[140vh] overflow-hidden">
+        <section ref={ref} className="relative h-[195vh] md:h-[140vh] overflow-hidden">
             {/* HERO CONTENT */}
             <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 bg-white dark:bg-black">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white text-center md:text-left">
@@ -49,7 +49,7 @@ export const HeroParallax = ({ products }) => {
                     className="mt-52 inline-block px-6 py-3 text-center bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
                 >
                     View Collection
-                </a>
+                </a> 
 
                 </center>
             </div>
@@ -121,11 +121,15 @@ export const ProductCard = ({ product }) => {
             className="group/product h-64 w-full sm:w-[18rem] md:w-[20rem] lg:w-[22rem] relative"
         >
             <a href={product.link} className="block">
+
+                
+
                 <img
                     src={product.thumbnail}
                     alt={product.title}
                     className="object-cover absolute h-full w-full inset-0 rounded-xl shadow-md"
                 />
+               
             </a>
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/product:opacity-100 transition duration-300 rounded-xl"></div>
             <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover/product:opacity-100 transition duration-300">

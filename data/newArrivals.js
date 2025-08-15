@@ -1,68 +1,97 @@
 export const newArrivals = [
-    {
-      id: 1,
-      name: "Classic Shirt",
-      price: 29.99,
-      images: [
-        "/images/IMG_2373.PNG", 
-        "/images/IMG_2373.PNG", 
-        "/images/IMG_2373.PNG", 
-      
-      ],
-    },
-    {
-      id: 2,
-      name: "Denim Jacket",
-      price: 59.99,
-      images: [
-        "/images/IMG_2377.PNG", 
-        "/images/IMG_2377.PNG", 
-        "/images/IMG_2377.PNG", 
-       
-      ],
-    },
-    {
-      id: 3,
-      name: "Black Slim Jeans",
-      price: 39.99,
-      images: [
-        "images/IMG_2379.PNG",
-        "images/IMG_2379.PNG",
-        "images/IMG_2379.PNG",
-       
-      ],
-    },
-    {
-      id: 4,
-      name: "Summer Dress",
-      price: 49.99,
-      images: [
-       "/images/IMG_7105.jpg",
-       "/images/IMG_7105.jpg",
-       "/images/IMG_7105.jpg",
-       
-      ],
-    },
-    {
-      id: 5,
-      name: "Leather Boots",
-      price: 89.99,
-      images: [
-        "images/IMG_2379.PNG",
-        "images/IMG_2379.PNG",
-        "images/IMG_2379.PNG",
-        
-      ],
-    },
-    {
-      id: 6,
-      name: "Denim Jacket",
-      price: 59.99,
-      images: [
-        "/images/IMG_2377.PNG", 
-        "/images/IMG_2377.PNG", 
-        "/images/IMG_2377.PNG", 
-       
-      ],
-    },
-  ];
+  {
+    id: 1,
+    name: "Toxic Black Fade",
+    price: 50,
+    images: [
+      "/images/black half.JPG",
+      "/images/black half.JPG",
+      "/images/black half.JPG",
+
+
+    ],
+  },
+  {
+    id: 2,
+    name: "Toxic Air Fade",
+    price: 50.00,
+    images: [
+      "/images/black full.JPG",
+      "/images/black full.JPG",
+      "/images/black full.JPG",
+
+
+    ],
+  },
+  {
+    id: 3,
+    name: "Toxic Air White",
+    price: 59.99,
+    images: [
+      "images/superman_white.JPG",
+      "images/superman_white.JPG",
+      "images/superman_white.JPG",
+
+
+    ],
+  },
+  {
+    id: 4,
+    name: "Toxic Air Brown",
+    price: 49.99,
+    images: [
+      "/images/brown.JPG",
+      "/images/brown.JPG",
+      "/images/brown.JPG",
+
+    ],
+  },
+  {
+    id: 5,
+    name: "ACL Joggers Gray",
+    price: 89.99,
+    images: [
+      "/images/joggers_ash.JPG",
+      "/images/joggers_ash.JPG",
+      "/images/joggers_ash.JPG",
+
+
+    ],
+  },
+  {
+    id: 6,
+    name: "ACL Joggers Blue",
+    price: 89.99,
+    images: [
+      "/images/joggers_yellow.JPG",
+      "/images/joggers_yellow.JPG",
+      "/images/joggers_yellow.JPG",
+
+    ],
+  },
+  {
+    id: 7,
+    name: "ACL Joggers Red",
+    price: 89.99,
+    images: [
+      "/images/joggers_red.JPG",
+      "/images/joggers_red.JPG",
+      "/images/joggers_red.JPG",
+
+
+    ],
+  },
+  {
+    id: 8,
+    name: "ACL Joggers Black",
+    price: 89.99,
+    images: [
+      "/images/joggers_green.JPG",
+      "/images/joggers_green.JPG",
+      "/images/joggers_green.JPG",
+
+
+
+    ],
+  },
+];

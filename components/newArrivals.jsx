@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Slider from "react-slick";
-import { newArrivals } from "@/data/newArrivals"; 
+import { newArrivals } from "@/data/newArrivals";
 
 const NewArrivals = () => {
     const [selectedItem, setSelectedItem] = useState(null);
@@ -11,11 +11,11 @@ const NewArrivals = () => {
 
     return (
         <section className="py-12">
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="max-w-7xl ">
                 <h2 className="text-4xl font-bold text-center mb-8 dark:text-white">
                     New Arrivals
                 </h2>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:grid-cols-4">
                     {newArrivals.map((item) => (
                         <div
                             key={item.id}
@@ -25,13 +25,13 @@ const NewArrivals = () => {
                             <img
                                 src={item.images[0]}
                                 alt={item.name}
-                                className="w-full h-48 sm:h-98 md:h-64 border"
+                                className="w-full h-48 sm:h-98 md:h-64 border-2"
                             />
                             <div className="pt-2 text-center">
-                                <h3 className="text-base sm:text-lg font-semibold dark:text-white">
+                                <h3 className="text-base sm:text-sm font-normal dark:text-white">
                                     {item.name}
                                 </h3>
-                                <p className="text-sm sm:text-lg font-bold text-black dark:text-white">
+                                <p className="text-sm sm:text-sm  text-black dark:text-white">
                                     ${item.price.toFixed(2)}
                                 </p>
                             </div>

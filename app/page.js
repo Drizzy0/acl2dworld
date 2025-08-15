@@ -3,6 +3,7 @@ import NewArrivals from "@/components/newArrivals";
 import { HeroParallaxDemo } from "@/components/hero-parallax-demo";
 import { MarqueeDemo } from "@/components/MarqueeDemo";
 import { Footer } from "@/components/Footer";
+import { PulsatingButton } from "@/components/magicui/pulsating-button";
 
 export default function Home() {
   return (
@@ -23,6 +24,9 @@ export default function Home() {
               Browse our entire collection for even more amazing deals and
               categories.
             </p>
+          <center className="mt-5">
+            <PulsatingButton pulseColor="#22c55e" duration="5s">Click Me</PulsatingButton>
+          </center>
           </div>
         </section>
 
@@ -32,7 +36,7 @@ export default function Home() {
 
         <MarqueeDemo/>
 
-       
+     
 
         <Footer />
         
