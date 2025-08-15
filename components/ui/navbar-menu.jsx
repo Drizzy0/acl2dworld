@@ -18,7 +18,7 @@ export const MenuItem = ({ setActive, active, item, children }) => {
         <div onMouseEnter={() => setActive(item)} className="relative">
             <motion.p
                 transition={{ duration: 0.3 }}
-                className="cursor-pointer text-foreground hover:text-primary dark:text-foreground dark:hover:text-primary"
+                className="cursor-pointer text-foreground text-white font-bold dark:text-foreground dark:hover:text-primary"
             >
                 {item}
             </motion.p>
@@ -114,50 +114,38 @@ export const Navbar = () => {
                     src="/images/newest.PNG"
                     alt="Logo"
                     className="h-10 w-15 ms-2 object-cover"
-
                 />
                 <span className="text-sm font-mono font-normal text-foreground dark:text-foreground ">
                     Air Clothing Line
                 </span>
             </div>
 
-            {/* Center: Menu Links (Hidden on mobile, shown on md and up) */}
+            {/* Center: Menu Links */}
             <div
                 className={cn(
-                    "absolute md:static top-16 left-0 w-full md:w-auto",
-                    "flex-col md:flex-row items-center px-4 md:px-0 py-4 md:py-0",
-                    "bg-blue-900/95 dark:bg-blue-950/95 md:bg-transparent dark:md:bg-transparent",
-                    "shadow-md md:shadow-none z-10",
+                    "absolute md:static top-16 right-4 md:right-0 md:w-auto",
+                    "flex-col md:flex-row items-center px-6 py-4 md:px-0 md:py-0",
+                    "bg-black/100 dark:bg-blue-950/95 md:bg-transparent dark:md:bg-transparent",
+                    "rounded-xl shadow-lg md:shadow-none z-2000 w-[80%] max-w-xs",
                     { flex: isMobileMenuOpen, hidden: !isMobileMenuOpen }
                 )}
             >
                 <Menu setActive={setActive}>
                     <MenuItem setActive={setActive} active={active} item="Home">
-                        <HoveredLink href="/">Go to Home</HoveredLink>
+                        <HoveredLink href="/"></HoveredLink>
                     </MenuItem>
                     <MenuItem setActive={setActive} active={active} item="Products">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ProductItem
-                                title="Laptop"
-                                description="Latest models"
-                                href="/products/laptop"
-                                src="/images/laptop.jpg"
-                            />
-                            <ProductItem
-                                title="Phone"
-                                description="Smartphones"
-                                href="/products/phone"
-                                src="/images/phone.jpg"
-                            />
+                         
                         </div>
                     </MenuItem>
                     <MenuItem setActive={setActive} active={active} item="Contact">
-                        <HoveredLink href="/contact">Get in Touch</HoveredLink>
+                        <HoveredLink href="/contact"></HoveredLink>
                     </MenuItem>
                 </Menu>
             </div>
 
-            {/* Right: Icons and Hamburger */}
+            {/* Right: Icons + Hamburger */}
             <div className="flex items-center space-x-4">
                 <ShoppingCart className="cursor-pointer text-foreground dark:text-foreground" />
                 <User className="cursor-pointer text-foreground dark:text-foreground" />

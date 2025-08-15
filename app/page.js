@@ -8,11 +8,11 @@ import { PulsatingButton } from "@/components/magicui/pulsating-button";
 export default function Home() {
   return (
     <div>
-      <Navbar />
+
       <main className="p-8">
         <HeroParallaxDemo />
 
-        <NewArrivals/>
+        <NewArrivals />
 
 
         <section className="py-5 px-6 my-9 bg-gray-100 dark:bg-neutral-900">
@@ -24,22 +24,31 @@ export default function Home() {
               Browse our entire collection for even more amazing deals and
               categories.
             </p>
-          <center className="mt-5">
-            <PulsatingButton pulseColor="#22c55e" duration="5s">Click Me</PulsatingButton>
-          </center>
+
+            <a
+                href="/products"
+                className="hover:text-primary transition-colors"
+              >
+
+            <center className="mt-5">
+              <PulsatingButton pulseColor="#22c55e" duration="5s">Click Me</PulsatingButton>
+            </center>
+
+              </a>
+
           </div>
         </section>
 
         <h2 className="text-2xl font-bold mb-6 text-center text-black dark:text-white  h-10 w-25">
-              Reviews
-            </h2>
+          Reviews
+        </h2>
 
-        <MarqueeDemo/>
+        <MarqueeDemo />
 
-     
 
-        <Footer />
-        
+
+
+
       </main>
     </div>
 

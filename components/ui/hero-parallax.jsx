@@ -45,7 +45,7 @@ export const HeroParallax = ({ products }) => {
 
                 <center>
                 <a
-                    href="/shop"
+                    href="/products"
                     className="mt-52 inline-block px-6 py-3 text-center bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
                 >
                     View Collection

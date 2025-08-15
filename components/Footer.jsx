@@ -40,6 +40,14 @@ export function Footer() {
                   About
                 </a>
               </li>
+
+              
+
+
+
+
+
+
               <li>
                 <a
                   href="/contact"
