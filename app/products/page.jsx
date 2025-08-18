@@ -2,12 +2,20 @@
 import React, { useState } from "react";
 import Slider from "react-slick";
 import { newArrivals } from "@/data/newArrivals";
+import { useCart } from "@/context/CartContext";
 
 const ProductsPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
+  const { addToCart } = useCart();
 
-  const openModal = (item) => setSelectedItem(item);
-  const closeModal = () => setSelectedItem(null);
+  const openModal = (item) => {
+    console.log("Opening modal for item:", item);
+    setSelectedItem(item);
+  };
+  const closeModal = () => {
+    console.log("Closing modal");
+    setSelectedItem(null);
+  };
 
   return (
     <section className="py-12">
@@ -22,7 +30,10 @@ const ProductsPage = () => {
             <div
               key={item.id}
               onClick={() => openModal(item)}
-              className="cursor-pointer bg-transparent rounded-lg overflow-hidden"
+              onKeyDown={(e) => e.key === "Enter" && openModal(item)}
+              role="button"
+              tabIndex={0}
+              className="cursor-pointer bg-transparent rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <img
                 src={item.images[0]}
@@ -45,8 +56,10 @@ const ProductsPage = () => {
       {/* Modal for Full Details */}
       {selectedItem && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
           onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
         >
           <div
             className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4 relative"
@@ -56,30 +69,36 @@ const ProductsPage = () => {
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-500 dark:text-gray-300 text-2xl"
+              aria-label="Close"
             >
               ×
             </button>
 
-            {/* Image Slider */}
-            <Slider
-              dots={true}
-              infinite={true}
-              speed={500}
-              slidesToShow={1}
-              slidesToScroll={1}
-              arrows={true}
-              className="mb-4"
-            >
-              {selectedItem.images.map((img, index) => (
-                <div key={index}>
-                  <img
-                    src={img}
-                    alt={`${selectedItem.name} view ${index + 1}`}
-                    className="w-full h-64 object-cover rounded-lg"
-                  />
-                </div>
-              ))}
-            </Slider>
+            {/* Image Slider with Fallback */}
+            {selectedItem.images?.length > 0 ? (
+              <Slider
+                dots={true}
+                infinite={true}
+                speed={500}
+                slidesToShow={1}
+                slidesToScroll={1}
+                arrows={true}
+                className="mb-4"
+              >
+                {selectedItem.images.map((img, index) => (
+                  <div key={index}>
+                    <img
+                      src={img}
+                      alt={`${selectedItem.name} view ${index + 1}`}
+                      className="w-full h-64 object-cover rounded-lg"
+                      onError={() => console.error(`Failed to load image: ${img}`)}
+                    />
+                  </div>
+                ))}
+              </Slider>
+            ) : (
+              <p className="text-red-500">No images available</p>
+            )}
 
             {/* Product Info */}
             <h3 className="text-xl font-bold dark:text-white">
@@ -89,11 +108,17 @@ const ProductsPage = () => {
               ${selectedItem.price.toFixed(2)}
             </p>
             <p className="text-gray-600 dark:text-gray-300 mt-2">
-              {selectedItem.fullDescription}
+              {selectedItem.fullDescription || "No description available"}
             </p>
 
             {/* Add to Cart */}
-            <button className="mt-4 px-4 py-2 bg-black text-white rounded-lg w-full hover:bg-gray-800">
+            <button
+              onClick={() => {
+                console.log("Adding to cart:", selectedItem);
+                addToCart(selectedItem);
+              }}
+              className="mt-4 px-4 py-2 bg-black text-white rounded-lg w-full hover:bg-gray-800"
+            >
               Add to Cart
             </button>
           </div>

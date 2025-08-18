@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { ShoppingCart, User, Menu as MenuIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/context/CartContext";
+import Link from 'next/link';
 
 const transition = {
     type: "spring",
@@ -94,6 +96,7 @@ export const HoveredLink = ({ children, ...rest }) => {
 export const Navbar = () => {
     const [active, setActive] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { cartItems } = useCart();
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -109,6 +112,7 @@ export const Navbar = () => {
             )}
         >
             {/* Left: Logo */}
+            <a href="/">
             <div className="flex items-center space-x-1">
                 <img
                     src="/images/newest.PNG"
@@ -119,6 +123,8 @@ export const Navbar = () => {
                     Air Clothing Line
                 </span>
             </div>
+
+            </a>
 
             {/* Center: Menu Links */}
             <div
@@ -131,24 +137,39 @@ export const Navbar = () => {
                 )}
             >
                 <Menu setActive={setActive}>
+                    <a href="/"
+                    className="border-1">
                     <MenuItem setActive={setActive} active={active} item="Home">
                         <HoveredLink href="/"></HoveredLink>
                     </MenuItem>
-                    <MenuItem setActive={setActive} active={active} item="Products">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         
-                        </div>
+                    </a>
+
+                    <a href="/products">
+                    <MenuItem setActive={setActive} active={active} item="Products">   
                     </MenuItem>
+                    </a>
+
+
+                    <a href="/contact">
                     <MenuItem setActive={setActive} active={active} item="Contact">
                         <HoveredLink href="/contact"></HoveredLink>
                     </MenuItem>
+                    </a>
+
                 </Menu>
             </div>
 
             {/* Right: Icons + Hamburger */}
             <div className="flex items-center space-x-4">
-                <ShoppingCart className="cursor-pointer text-foreground dark:text-foreground" />
-                <User className="cursor-pointer text-foreground dark:text-foreground" />
+                <Link href="/cart" className="relative">
+                    <ShoppingCart className="cursor-pointer text-foreground dark:text-foreground" />
+                    {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {cartItems.length}
+                        </span>
+                    )}
+                </Link>
+                {/* <User className="cursor-pointer text-foreground dark:text-foreground" /> */}
                 <button
                     className="md:hidden text-foreground dark:text-foreground"
                     onClick={toggleMobileMenu}

@@ -5,6 +5,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { Navbar } from "@/components/ui/navbar-menu";
 import { Footer } from "@/components/Footer";
+import { CartProvider } from "@/context/CartContext";
+
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,12 +28,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-
-        <AuroraBackground>
-        <Navbar />
-          {children}
-          <Footer />
-        </AuroraBackground>
+        <CartProvider>
+          <AuroraBackground>
+            <Navbar />
+            {children}
+            <Footer />
+          </AuroraBackground>
+        </CartProvider>
       </body>
     </html>
   );
