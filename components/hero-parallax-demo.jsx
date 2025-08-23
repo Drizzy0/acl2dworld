@@ -1,5 +1,3 @@
-
-
 "use client";
 import React from "react";
 import { HeroParallax } from "@/components/ui/hero-parallax";
@@ -24,6 +22,4 @@ export const products = [
     link: "/products/slim-jeans",
     thumbnail: "/images/num1.jpg",
   },
- 
- 
 ];

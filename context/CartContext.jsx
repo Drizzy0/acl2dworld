@@ -1,33 +1,30 @@
 "use client";
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useReducer } from "react";
 
 const CartContext = createContext();
 
+const cartReducer = (state, action) => {
+  switch (action.type) {
+    case "ADD_ITEM":
+      return [...state, { ...action.payload, quantity: 1, lineId: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}` }];
+    case "REMOVE_ITEM":
+      return state.filter((item) => item.lineId !== action.payload);
+    default:
+      return state;
+  }
+};
+
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, dispatch] = useReducer(cartReducer, []);
 
   const addToCart = (item) => {
     console.log("Adding item to cart:", item);
-    setCartItems((prevItems) => {
-      const newItems = [...prevItems, { ...item, quantity: 1 }];
-      console.log("New cart items after add:", newItems);
-      return newItems;
-    });
-    alert('Added to cart!');
+    dispatch({ type: "ADD_ITEM", payload: item });
   };
 
-  const removeFromCart = (itemId) => {
-    const id = Number(itemId); // Ensure ID is a number
-    console.log("Removing item with ID:", id);
-    setCartItems((prevItems) => {
-      console.log("Current cart items before removal:", prevItems);
-      const newItems = prevItems.filter((item) => {
-        console.log(`Comparing item ID: ${item.id} (type: ${typeof item.id}) with ${id} (type: ${typeof id})`);
-        return item.id !== id;
-      });
-      console.log("New cart items after removal:", newItems);
-      return newItems;
-    });
+  const removeFromCart = (lineId) => {
+    console.log("Removing line with ID:", lineId);
+    dispatch({ type: "REMOVE_ITEM", payload: lineId });
   };
 
   return (

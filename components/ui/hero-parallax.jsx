@@ -1,4 +1,3 @@
-// components/ui/hero-parallax.jsx
 "use client";
 import React from "react";
 import { motion, useScroll, useTransform, useSpring } from "motion/react";
@@ -33,9 +32,8 @@ export const HeroParallax = ({ products }) => {
     );
 
     return (
-        <section ref={ref} className="relative h-[195vh] md:h-[140vh] overflow-hidden">
-            {/* HERO CONTENT */}
-            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 bg-white dark:bg-black">
+        <section ref={ref} className="relative h-screen overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 dark:bg-black">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white text-center md:text-left">
                     Explore Our Clothing Collection
                 </h1>
@@ -54,7 +52,6 @@ export const HeroParallax = ({ products }) => {
                 </center>
             </div>
 
-            {/* FEATURED CLOTHES TITLE */}
             <motion.h2
                 style={{ opacity }}
                 className="text-center text-2xl md:text-3xl font-semibold mb-6 md:mb-8 dark:text-white relative z-20"
@@ -62,7 +59,6 @@ export const HeroParallax = ({ products }) => {
                 Featured Clothes
             </motion.h2>
 
-            {/* PRODUCT ROWS WITH DRAMATIC EFFECT */}
             <motion.div
                 style={{
                     rotateX,

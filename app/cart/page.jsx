@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { toast } from "react-toastify";
 
 const CartPage = () => {
   const { cartItems, removeFromCart } = useCart();
@@ -11,9 +12,10 @@ const CartPage = () => {
     console.log("CartPage re-rendered with cartItems:", cartItems);
   }, [cartItems]);
 
-  const handleRemove = (itemId) => {
-    console.log("Clicked remove button for item ID:", itemId);
-    removeFromCart(itemId);
+  const handleRemove = (lineId) => {
+    console.log("Clicked remove button for line ID:", lineId);
+    removeFromCart(lineId);
+    toast.error("Item removed from cart"); 
   };
 
   return (
@@ -38,11 +40,11 @@ const CartPage = () => {
           <div className="grid gap-6">
             {cartItems.map((item) => (
               <div
-                key={item.id}
+                key={item.lineId} 
                 className="flex items-center border-b border-gray-200 py-4"
               >
                 <img
-                  src={item.images[0]}
+                  src={item.images?.[0] || "/placeholder.png"}
                   alt={item.name}
                   className="w-24 h-24 object-cover rounded-lg mr-4"
                 />
@@ -51,11 +53,11 @@ const CartPage = () => {
                     {item.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300">
-                    ${item.price.toFixed(2)}
+                    ${Number(item.price ?? 0).toFixed(2)}
                   </p>
                 </div>
                 <button
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(item.lineId)}
                   className="text-red-500 hover:text-red-700"
                   aria-label={`Remove ${item.name} from cart`}
                 >

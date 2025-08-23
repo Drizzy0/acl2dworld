@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { newArrivals } from "@/data/newArrivals";
 import { useCart } from "@/context/CartContext";
+import { toast } from "react-toastify"; 
 
 const ProductsPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -17,6 +18,22 @@ const ProductsPage = () => {
     setSelectedItem(null);
   };
 
+  useEffect(() => {
+    if (selectedItem) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedItem]);
+
+  const handleAddToCart = (item) => {
+    addToCart(item);
+    toast.success("Added to cart!");
+  };
+
   return (
     <section className="py-12">
       <div className="max-w-7xl mx-auto px-4">
@@ -24,7 +41,6 @@ const ProductsPage = () => {
           All Products
         </h2>
 
-        {/* Product Grid */}
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:grid-cols-4">
           {newArrivals.map((item) => (
             <div
@@ -53,7 +69,6 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      {/* Modal for Full Details */}
       {selectedItem && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
@@ -65,7 +80,6 @@ const ProductsPage = () => {
             className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-500 dark:text-gray-300 text-2xl"
@@ -74,7 +88,6 @@ const ProductsPage = () => {
               ×
             </button>
 
-            {/* Image Slider with Fallback */}
             {selectedItem.images?.length > 0 ? (
               <Slider
                 dots={true}
@@ -100,7 +113,6 @@ const ProductsPage = () => {
               <p className="text-red-500">No images available</p>
             )}
 
-            {/* Product Info */}
             <h3 className="text-xl font-bold dark:text-white">
               {selectedItem.name}
             </h3>
@@ -111,11 +123,10 @@ const ProductsPage = () => {
               {selectedItem.fullDescription || "No description available"}
             </p>
 
-            {/* Add to Cart */}
             <button
               onClick={() => {
                 console.log("Adding to cart:", selectedItem);
-                addToCart(selectedItem);
+                handleAddToCart(selectedItem);
               }}
               className="mt-4 px-4 py-2 bg-black text-white rounded-lg w-full hover:bg-gray-800"
             >

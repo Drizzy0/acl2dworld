@@ -41,13 +41,6 @@ export function Footer() {
                 </a>
               </li>
 
-              
-
-
-
-
-
-
               <li>
                 <a
                   href="/contact"

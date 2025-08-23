@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { ShoppingCart, User, Menu as MenuIcon, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart, Menu as MenuIcon, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import Link from 'next/link';
+import { usePathname, useRouter } from "next/navigation";
 
 const transition = {
     type: "spring",
@@ -15,12 +17,15 @@ const transition = {
     restSpeed: 0.001,
 };
 
-export const MenuItem = ({ setActive, active, item, children }) => {
+export const MenuItem = ({ setActive, active, item, children, isActive }) => {
     return (
         <div onMouseEnter={() => setActive(item)} className="relative">
             <motion.p
                 transition={{ duration: 0.3 }}
-                className="cursor-pointer text-foreground text-white font-bold dark:text-foreground dark:hover:text-primary"
+                className={cn(
+                    "cursor-pointer text-white font-bold px-3 py-1 rounded transition",
+                    isActive ? "bg-gray-800 text-white" : "hover:bg-gray-700 hover:text-primary"
+                )}
             >
                 {item}
             </motion.p>
@@ -51,34 +56,12 @@ export const MenuItem = ({ setActive, active, item, children }) => {
 
 export const Menu = ({ setActive, children }) => {
     return (
-        <div
+        <nav
             onMouseLeave={() => setActive(null)}
-            className="flex flex-col md:flex-row md:space-x-6"
+            className="flex space-x-6"
         >
             {children}
-        </div>
-    );
-};
-
-export const ProductItem = ({ title, description, href, src }) => {
-    return (
-        <a href={href} className="flex space-x-2">
-            <img
-                src={src}
-                width={140}
-                height={70}
-                alt={title}
-                className="shrink-0 rounded-md shadow-2xl"
-            />
-            <div>
-                <h4 className="text-xl font-bold mb-1 text-foreground dark:text-foreground">
-                    {title}
-                </h4>
-                <p className="text-muted-foreground text-sm max-w-[10rem] dark:text-muted-foreground">
-                    {description}
-                </p>
-            </div>
-        </a>
+        </nav>
     );
 };
 
@@ -97,86 +80,179 @@ export const Navbar = () => {
     const [active, setActive] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { cartItems } = useCart();
+    const { user, logout } = useAuth();
+    const pathname = usePathname();
+    const [searchQuery, setSearchQuery] = useState("");
+    const router = useRouter();
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        console.log("Search:", searchQuery);
+    };
+
+    const handleLogout = () => {
+        logout();
+        router.push("/");
+    };
+
     return (
         <nav
             className={cn(
-                "sticky top-0 z-50 flex justify-between items-center px-2 py-2",
+                "sticky top-0 z-50 flex justify-between items-center px-4 py-2",
                 "bg-green-950/50 backdrop-blur-sm border-b border-border",
-                "text-foreground dark:bg-blue-950/95 dark:text-foreground",
-                "md:px-8"
+                "dark:bg-blue-950/95 dark:text-foreground"
             )}
         >
-            {/* Left: Logo */}
-            <a href="/">
-            <div className="flex items-center space-x-1">
-                <img
-                    src="/images/newest.PNG"
-                    alt="Logo"
-                    className="h-10 w-15 ms-2 object-cover"
-                />
-                <span className="text-sm font-mono font-normal text-foreground dark:text-foreground ">
-                    Air Clothing Line
-                </span>
-            </div>
+            <Link href="/">
+                <div className="flex items-center space-x-1">
+                    <img
+                        src="/images/newest.PNG"
+                        alt="Logo"
+                        className="h-10 w-15 object-cover"
+                    />
+                    <span className="text-sm font-mono font-normal text-white">
+                        Air Clothing Line
+                    </span>
+                </div>
+            </Link>
 
-            </a>
-
-            {/* Center: Menu Links */}
-            <div
-                className={cn(
-                    "absolute md:static top-16 right-4 md:right-0 md:w-auto",
-                    "flex-col md:flex-row items-center px-6 py-4 md:px-0 md:py-0",
-                    "bg-black/100 dark:bg-blue-950/95 md:bg-transparent dark:md:bg-transparent",
-                    "rounded-xl shadow-lg md:shadow-none z-2000 w-[80%] max-w-xs",
-                    { flex: isMobileMenuOpen, hidden: !isMobileMenuOpen }
-                )}
-            >
+            <div className="hidden md:flex flex-1 justify-center">
                 <Menu setActive={setActive}>
-                    <a href="/"
-                    className="border-1">
-                    <MenuItem setActive={setActive} active={active} item="Home">
-                        <HoveredLink href="/"></HoveredLink>
-                    </MenuItem>
-                    </a>
-
-                    <a href="/products">
-                    <MenuItem setActive={setActive} active={active} item="Products">   
-                    </MenuItem>
-                    </a>
-
-
-                    <a href="/contact">
-                    <MenuItem setActive={setActive} active={active} item="Contact">
-                        <HoveredLink href="/contact"></HoveredLink>
-                    </MenuItem>
-                    </a>
-
+                    <Link href="/">
+                        <MenuItem setActive={setActive} active={active} item="Home" isActive={pathname === "/"} />
+                    </Link>
+                    <Link href="/products">
+                        <MenuItem setActive={setActive} active={active} item="Products" isActive={pathname === "/products"} />
+                    </Link>
+                    <Link href="/about">
+                        <MenuItem setActive={setActive} active={active} item="About" isActive={pathname === "/about"} />
+                    </Link>
+                    <Link href="/contact">
+                        <MenuItem setActive={setActive} active={active} item="Contact" isActive={pathname === "/contact"} />
+                    </Link>
                 </Menu>
             </div>
 
-            {/* Right: Icons + Hamburger */}
             <div className="flex items-center space-x-4">
+                <form onSubmit={handleSearch} className="hidden md:flex items-center">
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="px-2 py-1 rounded-l-md bg-gray-50 text-gray-900 border border-gray-600 focus:outline-none"
+                    />
+                    <button type="submit" className="px-2 py-2 bg-black text-white rounded-r-md">
+                        <Search size={20} />
+                    </button>
+                </form>
+
                 <Link href="/cart" className="relative">
-                    <ShoppingCart className="cursor-pointer text-foreground dark:text-foreground" />
+                    <ShoppingCart className="cursor-pointer text-white" />
                     {cartItems.length > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                             {cartItems.length}
                         </span>
                     )}
                 </Link>
-                {/* <User className="cursor-pointer text-foreground dark:text-foreground" /> */}
+
+                {user ? (
+                    <button onClick={handleLogout} className="hidden md:block px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                        Logout
+                    </button>
+                ) : (
+                    <Link href="/login">
+                        <button className="hidden md:block px-3 py-1 bg-primary text-white rounded-md hover:bg-primary/80">
+                            Login
+                        </button>
+                    </Link>
+                )}
+
                 <button
-                    className="md:hidden text-foreground dark:text-foreground"
+                    className="md:hidden text-white"
                     onClick={toggleMobileMenu}
                 >
                     {isMobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
                 </button>
             </div>
+
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ y: "-100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "-100%", opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="absolute top-full left-0 w-full bg-black/95 dark:bg-blue-950/95 p-6 z-50 md:hidden shadow-lg"
+                    >
+                        <form onSubmit={handleSearch} className="flex items-center mb-6">
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 px-4 py-2 rounded-l-md bg-gray-800 text-white border border-gray-600 focus:outline-none"
+                            />
+                            <button type="submit" className="px-4 py-2 bg-black text-white rounded-r-md hover:bg-gray-900">
+                                <Search size={20} />
+                            </button>
+                        </form>
+
+                        <ul className="flex flex-col space-y-4 text-center">
+                            <li>
+                                <Link href="/" className={cn(
+                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    pathname === "/" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
+                                )} onClick={toggleMobileMenu}>
+                                    Home
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/products" className={cn(
+                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    pathname === "/products" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
+                                )} onClick={toggleMobileMenu}>
+                                    Products
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/about" className={cn(
+                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    pathname === "/about" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
+                                )} onClick={toggleMobileMenu}>
+                                    About
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/contact" className={cn(
+                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    pathname === "/contact" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
+                                )} onClick={toggleMobileMenu}>
+                                    Contact
+                                </Link>
+                            </li>
+                        </ul>
+
+                        <div className="mt-6 text-center">
+                            {user ? (
+                                <button onClick={() => { handleLogout(); toggleMobileMenu(); }} className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                    Logout
+                                </button>
+                            ) : (
+                                <Link href="/login" onClick={toggleMobileMenu}>
+                                    <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/80">
+                                        Login
+                                    </button>
+                                </Link>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </nav>
     );
 };

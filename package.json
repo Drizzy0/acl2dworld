@@ -10,14 +10,17 @@
   },
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.2.14",
+    "@tabler/icons-react": "^3.34.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "motion": "^12.23.12",
     "next": "14.2.31",
     "react": "^18",
     "react-dom": "^18",
     "react-slick": "^0.31.0",
+    "react-toastify": "^11.0.5",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7"

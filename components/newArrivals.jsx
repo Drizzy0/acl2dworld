@@ -1,13 +1,14 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { newArrivals } from "@/data/newArrivals";
 import { useCart } from "@/context/CartContext";
+import { toast } from "react-toastify";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const ProductsPage = () => {
+const NewArrivals = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const { addToCart } = useCart();
 
@@ -17,14 +18,29 @@ const ProductsPage = () => {
   };
   const closeModal = () => setSelectedItem(null);
 
+  useEffect(() => {
+    if (selectedItem) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedItem]);
+
+  const handleAddToCart = (item) => {
+    addToCart(item);
+    toast.success("Added to cart!");
+  };
+
   return (
     <section className="py-12 isolate relative z-10">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-4xl font-bold text-center mb-8 dark:text-white">
-          All Products
+          New Arrivals
         </h2>
 
-        {/* Product Grid */}
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:grid-cols-4">
           {newArrivals.map((item) => (
             <div
@@ -53,7 +69,6 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      {/* Modal for Full Details */}
       {selectedItem && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
@@ -65,7 +80,6 @@ const ProductsPage = () => {
             className="relative bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-500 dark:text-gray-300 text-2xl"
@@ -74,7 +88,6 @@ const ProductsPage = () => {
               ×
             </button>
 
-            {/* Image Slider with fallback */}
             {selectedItem.images?.length > 1 ? (
               <Slider
                 dots
@@ -103,7 +116,6 @@ const ProductsPage = () => {
               />
             )}
 
-            {/* Product Info */}
             <h3 className="text-xl font-bold dark:text-white">
               {selectedItem.name}
             </h3>
@@ -114,9 +126,8 @@ const ProductsPage = () => {
               {selectedItem.fullDescription}
             </p>
 
-            {/* Add to Cart */}
             <button
-              onClick={() => addToCart(selectedItem)}
+              onClick={() => handleAddToCart(selectedItem)}
               className="mt-4 px-4 py-2 bg-black text-white rounded-lg w-full hover:bg-gray-800"
             >
               Add to Cart
@@ -128,4 +139,4 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage;
+export default NewArrivals;
