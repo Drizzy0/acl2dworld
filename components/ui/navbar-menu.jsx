@@ -23,7 +23,7 @@ export const MenuItem = ({ setActive, active, item, children, isActive }) => {
             <motion.p
                 transition={{ duration: 0.3 }}
                 className={cn(
-                    "cursor-pointer text-white font-bold px-3 py-1 rounded transition",
+                    "cursor-pointer text-white font-bold px-3 py-1 rounded transition-colors",
                     isActive ? "bg-gray-800 text-white" : "hover:bg-gray-700 hover:text-primary"
                 )}
             >
@@ -91,7 +91,9 @@ export const Navbar = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        console.log("Search:", searchQuery);
+        if (searchQuery.trim()) {
+          router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
+        }
     };
 
     const handleLogout = () => {
@@ -125,8 +127,8 @@ export const Navbar = () => {
                     <Link href="/">
                         <MenuItem setActive={setActive} active={active} item="Home" isActive={pathname === "/"} />
                     </Link>
-                    <Link href="/products">
-                        <MenuItem setActive={setActive} active={active} item="Products" isActive={pathname === "/products"} />
+                    <Link href="/shop">
+                        <MenuItem setActive={setActive} active={active} item="Shop" isActive={pathname === "/shop"} />
                     </Link>
                     <Link href="/about">
                         <MenuItem setActive={setActive} active={active} item="About" isActive={pathname === "/about"} />
@@ -144,15 +146,15 @@ export const Navbar = () => {
                         placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="px-2 py-1 rounded-l-md bg-gray-50 text-gray-900 border border-gray-600 focus:outline-none"
+                        className="px-2 py-1 rounded-l-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-600 focus:outline-none"
                     />
-                    <button type="submit" className="px-2 py-2 bg-black text-white rounded-r-md">
+                    <button type="submit" className="px-2 py-2 bg-black text-white rounded-r-md hover:bg-gray-900">
                         <Search size={20} />
                     </button>
                 </form>
 
                 <Link href="/cart" className="relative">
-                    <ShoppingCart className="cursor-pointer text-white" />
+                    <ShoppingCart className="cursor-pointer text-white" size={24} />
                     {cartItems.length > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                             {cartItems.length}
@@ -161,12 +163,12 @@ export const Navbar = () => {
                 </Link>
 
                 {user ? (
-                    <button onClick={handleLogout} className="hidden md:block px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                    <button onClick={handleLogout} className="hidden md:block px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
                         Logout
                     </button>
                 ) : (
                     <Link href="/login">
-                        <button className="hidden md:block px-3 py-1 bg-primary text-white rounded-md hover:bg-primary/80">
+                        <button className="hidden md:block px-3 py-1 bg-primary text-white rounded-md hover:bg-primary/80 transition">
                             Login
                         </button>
                     </Link>
@@ -205,23 +207,23 @@ export const Navbar = () => {
                         <ul className="flex flex-col space-y-4 text-center">
                             <li>
                                 <Link href="/" className={cn(
-                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    "block text-white text-lg px-3 py-1 rounded transition-colors",
                                     pathname === "/" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
                                 )} onClick={toggleMobileMenu}>
                                     Home
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/products" className={cn(
-                                    "text-white text-lg px-3 py-1 rounded transition",
-                                    pathname === "/products" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
+                                <Link href="/shop" className={cn(
+                                    "block text-white text-lg px-3 py-1 rounded transition-colors",
+                                    pathname === "/shop" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
                                 )} onClick={toggleMobileMenu}>
-                                    Products
+                                    Shop
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/about" className={cn(
-                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    "block text-white text-lg px-3 py-1 rounded transition-colors",
                                     pathname === "/about" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
                                 )} onClick={toggleMobileMenu}>
                                     About
@@ -229,7 +231,7 @@ export const Navbar = () => {
                             </li>
                             <li>
                                 <Link href="/contact" className={cn(
-                                    "text-white text-lg px-3 py-1 rounded transition",
+                                    "block text-white text-lg px-3 py-1 rounded transition-colors",
                                     pathname === "/contact" ? "bg-gray-800 text-primary" : "hover:bg-gray-700 hover:text-primary"
                                 )} onClick={toggleMobileMenu}>
                                     Contact
@@ -239,12 +241,12 @@ export const Navbar = () => {
 
                         <div className="mt-6 text-center">
                             {user ? (
-                                <button onClick={() => { handleLogout(); toggleMobileMenu(); }} className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                <button onClick={() => { handleLogout(); toggleMobileMenu(); }} className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
                                     Logout
                                 </button>
                             ) : (
                                 <Link href="/login" onClick={toggleMobileMenu}>
-                                    <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/80">
+                                    <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition">
                                         Login
                                     </button>
                                 </Link>

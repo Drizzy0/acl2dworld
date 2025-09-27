@@ -25,7 +25,7 @@ const geistMono = localFont({
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin = pathname.startsWith("/(admin)");
   const isAuthPage = pathname === "/login" || pathname === "/register"; 
 
   return (

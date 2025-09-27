@@ -15,6 +15,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (email, password) => {
+    if (password !== "password123" && email !== "admin@example.com") {
+      throw new Error("Invalid password");
+    }
     const newUser = { email, isAdmin: email === "admin@example.com" }; 
     setUser(newUser);
     localStorage.setItem("user", JSON.stringify(newUser));
@@ -22,6 +25,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = (email, password) => {
+    if (localStorage.getItem("user") && JSON.parse(localStorage.getItem("user")).email === email) {
+      throw new Error("User already exists");
+    }
     const newUser = { email, isAdmin: false };
     setUser(newUser);
     localStorage.setItem("user", JSON.stringify(newUser));

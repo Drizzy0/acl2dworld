@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer
       className={cn(
-        "w-screen -mx-[calc(50vw-50%)] bg-green-950/50 backdrop-blur-sm text-foreground py-8 border-t border-border",
+        "w-full bg-green-950/50 backdrop-blur-sm text-foreground py-8 border-t border-border",
         "dark:bg-blue-950/95 dark:text-foreground"
       )}
     >
@@ -18,7 +18,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Navigation Links */}
           <div>
             <h3 className="text-lg font-bold text-primary">Quick Links</h3>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground text-white">
@@ -29,10 +28,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="/products"
+                  href="/shop"
                   className="hover:text-primary transition-colors"
                 >
-                  Products
+                  Shop
                 </a>
               </li>
               <li>
@@ -40,7 +39,6 @@ export function Footer() {
                   About
                 </a>
               </li>
-
               <li>
                 <a
                   href="/contact"
@@ -52,7 +50,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Social Media/Contact */}
           <div>
             <h3 className="text-lg font-bold text-primary">Connect With Us</h3>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground text-white">
@@ -90,7 +87,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="mt-8 text-center text-sm text-muted-foreground border-t border-border pt-4 text-white">
           &copy; {new Date().getFullYear()} ACL. All rights reserved.
         </div>

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 export const HeroParallax = ({ products }) => {
     const firstRow = products.slice(0, 3);
@@ -12,7 +12,7 @@ export const HeroParallax = ({ products }) => {
         offset: ["start start", "end start"],
     });
 
-    const springConfig = { stiffness: 300, damping: 30, bounce: 100 };
+    const springConfig = { stiffness: 300, damping: 30 };
 
     const translateY = useSpring(
         useTransform(scrollYProgress, [0, 0.2], [-500, 0]),
@@ -33,7 +33,7 @@ export const HeroParallax = ({ products }) => {
 
     return (
         <section ref={ref} className="relative h-screen overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 dark:bg-black">
+            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 sticky top-0 z-10 bg-white dark:bg-black">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white text-center md:text-left">
                     Explore Our Clothing Collection
                 </h1>
@@ -41,15 +41,14 @@ export const HeroParallax = ({ products }) => {
                     Discover stylish, high-quality clothing designed for every occasion.
                 </p>
 
-                <center>
-                <a
-                    href="/products"
-                    className="mt-52 inline-block px-6 py-3 text-center bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
-                >
-                    View Collection
-                </a> 
-
-                </center>
+                <div className="flex justify-center mt-8">
+                  <a
+                      href="/shop"
+                      className="inline-block px-6 py-3 text-center bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
+                  >
+                      View Collection
+                  </a> 
+                </div>
             </div>
 
             <motion.h2
@@ -116,19 +115,15 @@ export const ProductCard = ({ product }) => {
             whileHover={{ y: -15, scale: 1.05, rotateZ: 2 }}
             className="group/product h-64 w-full sm:w-[18rem] md:w-[20rem] lg:w-[22rem] relative"
         >
-            <a href={product.link} className="block">
-
-                
-
+            <a href={product.link} className="block h-full w-full">
                 <img
                     src={product.thumbnail}
                     alt={product.title}
                     className="object-cover absolute h-full w-full inset-0 rounded-xl shadow-md"
                 />
-               
             </a>
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/product:opacity-100 transition duration-300 rounded-xl"></div>
-            <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover/product:opacity-100 transition duration-300">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 rounded-xl"></div>
+            <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover:opacity-100 transition duration-300">
                 <h3 className="text-base md:text-lg font-semibold text-white">
                     {product.title}
                 </h3>
