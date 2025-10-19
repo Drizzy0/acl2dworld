@@ -31,7 +31,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 relative z-[9999]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold dark:text-white mb-4">
@@ -115,6 +115,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="text"
+                      placeholder="Enter your name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
@@ -128,6 +129,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="email"
+                      placeholder="Enter your email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
@@ -142,6 +144,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="tel"
+                    placeholder="Enter your Phone Number"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -154,6 +157,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="text"
+                    placeholder="Enter your subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
@@ -167,6 +171,7 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     name="message"
+                    placeholder="Enter your message"
                     value={formData.message}
                     onChange={handleChange}
                     rows={5}
