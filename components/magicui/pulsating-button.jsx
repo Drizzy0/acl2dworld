@@ -3,7 +3,16 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 export const PulsatingButton = React.forwardRef(
-  ({ className, children, pulseColor = "#808080", duration = "1.5s", ...props }, ref) => {
+  (
+    {
+      className,
+      children,
+      pulseColor = "#808080",
+      duration = "1.5s",
+      ...props
+    },
+    ref
+  ) => {
     return (
       <button
         ref={ref}
@@ -18,9 +27,7 @@ export const PulsatingButton = React.forwardRef(
         {...props}
       >
         {/* Pulsating ring */}
-        <span
-          className="absolute left-1/2 top-1/2 size-full rounded-lg bg-[var(--pulse-color)] animate-pulseRing"
-        />
+        <span className="absolute left-1/2 top-1/2 size-full rounded-lg bg-[var(--pulse-color)] animate-pulseRing" />
 
         {/* Button text/content */}
         <span className="relative z-10">{children}</span>
