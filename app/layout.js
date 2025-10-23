@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { usePathname } from "next/navigation";
 import { CartProvider } from "@/contexts/CartContext";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,25 +32,32 @@ export default function RootLayout({ children }) {
     pathname.startsWith("/settings") ||
     pathname.startsWith("/users");
 
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage =
+    pathname === "/sign-in" ||
+    pathname === "/sign-up" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname === "/verify";
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>
-          {isAdmin || isAuthPage ? (
-            children
-          ) : (
-            <AuroraBackground>
-              <Navbar />
-              {children}
-              <Footer />
-            </AuroraBackground>
-          )}
-          <ToastContainer position="top-right" autoClose={3000} />
-        </CartProvider>
+        <UserProvider>
+          <CartProvider>
+            {isAdmin || isAuthPage ? (
+              children
+            ) : (
+              <AuroraBackground>
+                <Navbar />
+                {children}
+                <Footer />
+              </AuroraBackground>
+            )}
+            <ToastContainer position="top-right" autoClose={3000} />
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   );

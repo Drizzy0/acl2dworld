@@ -1,17 +1,20 @@
 "use client";
+import "react-phone-input-2/lib/style.css";
+import PhoneInput from "react-phone-input-2";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Mail, Lock, User, Check } from "lucide-react";
+import SuccessScreen from "@/components/SuccessScreen";
+import { createUserAccount } from "@/lib/appwrite";
 
-export default function Register() {
+export default function SignUp() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -19,6 +22,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
 
   const handleInputChange = (e) => {
@@ -27,16 +31,29 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+
     setIsLoading(true);
     setError("");
+
     try {
-      toast.success("Registration successful! Welcome to Air Clothing Line.");
-      router.push("/login");
+      console.log("🔄 Creating account for:", formData.email);
+      await createUserAccount(
+        formData.firstName,
+        formData.lastName,
+        formData.email,
+        formData.password
+      );
+      console.log("✅ Account created, verification email sent");
+
+      toast.success("Registration successful! Please verify your email.");
+      setShowSuccess(true);
     } catch (err) {
+      console.error("❌ Signup failed:", err);
       setError(err.message || "Registration failed. Please try again.");
       toast.error("Registration failed");
     } finally {
@@ -44,12 +61,16 @@ export default function Register() {
     }
   };
 
+  if (showSuccess) {
+    return <SuccessScreen email={formData.email} />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-5 ml-11 mt-10">
         <Image
-          src="/images/clothing-background.jpg"
-          alt="Clothing background"
+          src="/images/newest.PNG"
+          alt="Air Clothing Line Logo"
           fill
           className="object-cover"
         />
@@ -78,12 +99,6 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:space-y-4 space-y-2"
         >
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 p-4 rounded-lg">
-              {error}
-            </div>
-          )}
-
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
               <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -121,20 +136,6 @@ export default function Register() {
                 name="email"
                 placeholder="Email Address"
                 value={formData.email}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 md:py-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-colors"
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-4 md:py-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-colors"
                 required
@@ -185,6 +186,12 @@ export default function Register() {
             </div>
           </div>
 
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 p-4 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
@@ -207,7 +214,7 @@ export default function Register() {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Already have an account?{" "}
               <Link
-                href="/login"
+                href="/sign-in"
                 className="text-black dark:text-white font-semibold hover:underline"
               >
                 Sign in here

@@ -133,3 +133,51 @@
     }
   }
 }
+
+.phone-input-container {
+  width: 100%;
+}
+
+.phone-input-container input {
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+.phone-input-container input:disabled {
+  background-color: #f3f4f6 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed;
+}
+
+.dark .phone-input-container input {
+  background-color: #374151 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .phone-input-container input:disabled {
+  background-color: #1f2937 !important;
+  color: #9ca3af !important;
+}
+
+.dark .phone-input-container .flag-dropdown {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .phone-input-container .selected-flag {
+  background-color: #374151 !important;
+}
+
+.dark .phone-input-container .country-list {
+  background-color: #374151 !important;
+  color: white !important;
+}
+
+.dark .phone-input-container .country-list .country:hover {
+  background-color: #4b5563 !important;
+}
+
+.dark .phone-input-container .country-list .country.highlight {
+  background-color: #4b5563 !important;
+}

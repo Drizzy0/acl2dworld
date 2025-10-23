@@ -1,11 +1,14 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Menu as MenuIcon, X, Search, User } from "lucide-react";
+import { ShoppingCart, Menu as MenuIcon, X, LogOut, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import { account, logoutUser } from "@/lib/appwrite";
+import { toast } from "react-toastify";
+import { useUser } from "@/contexts/UserContext";
 
 const transition = {
   type: "spring",
@@ -22,7 +25,9 @@ export const MenuItem = ({ setActive, active, item, children, isActive }) => {
       <motion.p
         transition={{ duration: 0.3 }}
         className={cn(
-          "cursor-pointer text-white font-bold px-3 py-1 rounded transition-colors",
+          "cursor-pointer text-white font-bold rounded transition-colors",
+          "text-xs md:text-sm lg:text-base xl:text-lg",
+          "px-1 md:px-2 lg:px-3 xl:px-4 py-1 md:py-1.5 lg:py-2 xl:py-2.5",
           isActive
             ? "bg-gray-800 text-white"
             : "hover:bg-gray-700 hover:text-primary"
@@ -59,8 +64,7 @@ export const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { cartItems } = useCart();
-
-  const user = null;
+  const { user, setUser, loadingUser } = useUser();
 
   const isCartActive = pathname === "/cart";
   const isProfileActive = pathname === "/profile";
@@ -69,15 +73,16 @@ export const Navbar = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      toast.success("Logged out successfully");
+      setIsMobileMenuOpen(false);
+      router.push("/");
+    } catch (error) {
+      toast.error("Logout failed");
     }
-  };
-
-  const handleLogout = () => {
-    router.push("/");
   };
 
   return (
@@ -89,13 +94,13 @@ export const Navbar = () => {
       )}
     >
       <Link href="/">
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center">
           <img
             src="/images/newest.PNG"
             alt="Logo"
-            className="h-10 w-15 object-cover"
+            className="h-6 w-10 md:h-8 md:w-12 lg:h-12 lg:w-15 object-cover"
           />
-          <span className="text-sm font-mono font-normal text-white">
+          <span className="text-xs md:text-sm lg:text-base xl:text-lg font-mono font-normal text-white">
             Air Clothing Line
           </span>
         </div>
@@ -127,14 +132,16 @@ export const Navbar = () => {
               isActive={pathname === "/about"}
             />
           </Link>
-          <Link href="/profile">
-            <MenuItem
-              setActive={setActive}
-              active={active}
-              item="Profile"
-              isActive={isProfileActive}
-            />
-          </Link>
+          {user && (
+            <Link href="/profile">
+              <MenuItem
+                setActive={setActive}
+                active={active}
+                item="Profile"
+                isActive={isProfileActive}
+              />
+            </Link>
+          )}
           <Link href="/contact">
             <MenuItem
               setActive={setActive}
@@ -153,7 +160,11 @@ export const Navbar = () => {
               "cursor-pointer",
               isCartActive ? "text-black fill-current" : "text-white"
             )}
-            size={24}
+            size={20}
+            style={{
+              width: "clamp(20px, 2.5vw, 32px)",
+              height: "clamp(20px, 2.5vw, 32px)",
+            }}
           />
           {cartItems.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -163,23 +174,22 @@ export const Navbar = () => {
         </Link>
 
         {user ? (
-          <>
-            <Link href="/profile">
-              <button className="hidden md:block px-3 py-1 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition">
-                Profile
-              </button>
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="hidden md:block px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition ml-2"
-            >
-              Logout
-            </button>
-          </>
+          <button
+            onClick={handleLogout}
+            className="hidden md:flex items-center space-x-2 px-3 md:px-4 lg:px-5 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+          >
+            <span>Sign Out</span>
+          </button>
         ) : (
-          <Link href="/login">
-            <button className="hidden md:block px-3 py-1 bg-primary text-white rounded-md hover:bg-primary/80 transition">
-              Login
+          <Link href="/sign-in">
+            <button
+              className="hidden md:flex items-center space-x-2 
+  px-3 md:px-4 lg:px-5 xl:px-6
+  py-1 md:py-1.5 lg:py-2 xl:py-2.5
+  text-xs md:text-sm lg:text-base xl:text-lg
+  bg-primary text-white rounded-md hover:bg-primary/80 transition"
+            >
+              <span>Sign In</span>
             </button>
           </Link>
         )}
@@ -241,20 +251,22 @@ export const Navbar = () => {
                   About
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/profile"
-                  className={cn(
-                    "block text-lg px-3 py-1 rounded transition-colors",
-                    pathname === "/profile"
-                      ? "bg-white text-black"
-                      : "text-white hover:bg-gray-700 hover:text-primary"
-                  )}
-                  onClick={toggleMobileMenu}
-                >
-                  Profile
-                </Link>
-              </li>
+              {user && (
+                <li>
+                  <Link
+                    href="/profile"
+                    className={cn(
+                      "block text-lg px-3 py-1 rounded transition-colors",
+                      pathname === "/profile"
+                        ? "bg-white text-black"
+                        : "text-white hover:bg-gray-700 hover:text-primary"
+                    )}
+                    onClick={toggleMobileMenu}
+                  >
+                    Profile
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/contact"
@@ -273,26 +285,18 @@ export const Navbar = () => {
 
             <div className="mt-6 text-center">
               {user ? (
-                <>
-                  <Link href="/profile" onClick={toggleMobileMenu}>
-                    <button className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition mb-2">
-                      Profile
-                    </button>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      toggleMobileMenu();
-                    }}
-                    className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                  >
-                    Logout
-                  </button>
-                </>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center space-x-2 px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                >
+                  <LogOut size={18} />
+                  <span>Sign Out</span>
+                </button>
               ) : (
-                <Link href="/login" onClick={toggleMobileMenu}>
-                  <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition">
-                    Login
+                <Link href="/sign-in" onClick={toggleMobileMenu}>
+                  <button className="w-full flex items-center justify-center space-x-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition">
+                    <LogIn size={18} />
+                    <span>Sign In</span>
                   </button>
                 </Link>
               )}
