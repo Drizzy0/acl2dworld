@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmPasswordReset } from "@/lib/appwrite";
 import Image from "next/image";
 
-export default function ResetPassword() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
@@ -63,7 +63,7 @@ export default function ResetPassword() {
           className="mx-auto mb-4"
         />
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
-          Reset Your Password{" "}
+          Reset Your Password
         </h2>
         {error && (
           <p className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
@@ -124,5 +124,19 @@ export default function ResetPassword() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account } from "@/lib/appwrite";
 
-export default function Verify() {
+function VerifyContent() {
   const router = useRouter();
   const params = useSearchParams();
   const [status, setStatus] = useState("Verifying your email...");
@@ -37,5 +37,21 @@ export default function Verify() {
         <p className="text-gray-700 text-lg font-medium">{status}</p>
       </div>
     </div>
+  );
+}
+
+export default function Verify() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="bg-white p-8 rounded-xl shadow text-center max-w-sm">
+            <p className="text-gray-700 text-lg font-medium">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <VerifyContent />
+    </Suspense>
   );
 }
