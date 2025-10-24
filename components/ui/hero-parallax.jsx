@@ -11,6 +11,12 @@ import Link from "next/link";
 export const HeroParallax = ({ products }) => {
   const { user } = useUser();
   console.log("HeroParallax user:", user);
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [profileStatus, setProfileStatus] = useState({
     isComplete: false,
     completionPercentage: 0,
@@ -60,7 +66,7 @@ export const HeroParallax = ({ products }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center h-auto md:h-[60vh] px-4 max-w-7xl mx-auto gap-8 z-10 relative pt-12 md:pt-20">
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold dark:text-white">
-            {user
+            {isMounted && user
               ? `Welcome back, ${
                   user.document?.firstName ||
                   user.name?.split(" ")[0] ||
@@ -83,7 +89,7 @@ export const HeroParallax = ({ products }) => {
           </div>
         </div>
 
-        {user?.document && (
+        {isMounted && user?.document && (
           <div className="flex-1 max-w-md w-full">
             <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:border-gray-700 shadow-xl">
               <h3 className="text-xl text-gray-900 font-semibold mb-4">
