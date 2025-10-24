@@ -33,7 +33,6 @@ import {
   getUserOrders,
   getOrderItems,
 } from "@/lib/appwrite";
-import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import ConfirmModal from "@/components/ConfirmModal";
 import AvatarUploadModal from "@/components/AvatarUploadModal";
@@ -43,7 +42,7 @@ const PhoneInput = dynamicImport(() => import("react-phone-input-2"), {
   ssr: false,
 });
 
-const ProfilePage = () => {
+function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: contextUser, setUser: setContextUser } = useUser();
@@ -130,16 +129,16 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const tab = searchParams.get("tab");
+    const tabs = [
+      { id: "info", label: "Personal Info", icon: User },
+      { id: "addresses", label: "Addresses", icon: MapPin },
+      { id: "orders", label: "Order History", icon: ShoppingBag },
+      { id: "settings", label: "Settings", icon: Settings },
+    ];
     if (tab && tabs.some((t) => t.id === tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    if (activeTab === "orders" && user && user.userId) {
-      loadOrders();
-    }
-  }, [activeTab, user]);
 
   async function loadOrders() {
     setLoadingOrders(true);
@@ -188,8 +187,6 @@ const ProfilePage = () => {
         lastName: formData.lastName,
         phoneNumber: formData.phone,
       });
-
-      console.log("✅ Profile updated:", updatedDoc);
 
       setUser({
         ...user,
@@ -263,20 +260,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleDeleteAddress = async (addressId) => {
-    if (!confirm("Delete this address?")) return;
-
-    try {
-      await deleteAddress(addressId);
-      const updatedAddresses = await getUserAddresses(user.userId);
-      setAddresses(updatedAddresses);
-      toast.success("Address deleted!");
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete address");
-    }
-  };
-
   const handleSetDefault = async (addressId) => {
     try {
       await setDefaultAddress(user.userId, addressId);
@@ -292,8 +275,6 @@ const ProfilePage = () => {
   const handleAvatarUpload = async (file) => {
     try {
       const avatarUrl = await uploadAvatar(user.userId, file);
-
-      console.log("📝 About to update profile with avatarUrl:", avatarUrl);
 
       if (!avatarUrl) {
         throw new Error("Avatar URL is undefined");
@@ -382,522 +363,517 @@ const ProfilePage = () => {
           My Profile
         </motion.h1>
 
-        <Suspense fallback={<div>Loading profile...</div>}>
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-              <div className="text-center mb-6">
-                <div className="relative inline-block">
-                  <img
-                    src={user.avatar}
-                    alt="Avatar"
-                    className="w-20 h-20 rounded-full mx-auto mb-4 object-cover cursor-pointer hover:opacity-80 transition"
-                    onClick={() => setShowAvatarModal(true)}
-                  />
+        <div className="grid md:grid-cols-4 gap-8">
+          <div className="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div className="text-center mb-6">
+              <div className="relative inline-block">
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="w-20 h-20 rounded-full mx-auto mb-4 object-cover cursor-pointer hover:opacity-80 transition"
+                  onClick={() => setShowAvatarModal(true)}
+                />
+                <button
+                  onClick={() => setShowAvatarModal(true)}
+                  className="absolute bottom-4 right-0 bg-black dark:bg-white p-1.5 rounded-full hover:scale-110 transition"
+                  title="Change avatar"
+                >
+                  <Camera size={14} className="text-white dark:text-black" />
+                </button>
+              </div>
+              <h2 className="text-lg md:text-lg lg:text-xl font-bold dark:text-white">
+                {user.firstName} {user.lastName}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                {user.email}
+              </p>
+              {user.phone && (
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                  {user.phone}
+                </p>
+              )}
+            </div>
+            <nav className="space-y-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
                   <button
-                    onClick={() => setShowAvatarModal(true)}
-                    className="absolute bottom-4 right-0 bg-black dark:bg-white p-1.5 rounded-full hover:scale-110 transition"
-                    title="Change avatar"
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      activeTab === tab.id
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                   >
-                    <Camera size={14} className="text-white dark:text-black" />
+                    <Icon size={20} />
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                );
+              })}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 p-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+              >
+                <LogOut size={20} />
+                <span className="font-medium">Sign Out</span>
+              </button>
+            </nav>
+          </div>
+
+          <div className="md:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            {activeTab === "info" && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold dark:text-white">
+                    Personal Information
+                  </h2>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="flex items-center space-x-2 text-black hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+                  >
+                    <Edit size={20} />
+                    <span>{isEditing ? "Cancel" : "Edit"}</span>
                   </button>
                 </div>
-                <h2 className="text-lg md:text-lg lg:text-xl font-bold dark:text-white">
-                  {user.firstName} {user.lastName}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  {user.email}
-                </p>
-                {user.phone && (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                    {user.phone}
-                  </p>
-                )}
-              </div>
-              <nav className="space-y-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                        activeTab === tab.id
-                          ? "bg-black text-white dark:bg-white dark:text-black"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      <Icon size={20} />
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                >
-                  <LogOut size={20} />
-                  <span className="font-medium">Sign Out</span>
-                </button>
-              </nav>
-            </div>
-
-            <div className="md:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-              {activeTab === "info" && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold dark:text-white">
-                      Personal Information
-                    </h2>
-                    <button
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="flex items-center space-x-2 text-black hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
-                    >
-                      <Edit size={20} />
-                      <span>{isEditing ? "Cancel" : "Edit"}</span>
-                    </button>
-                  </div>
-                  <form className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold dark:text-white mb-2">
-                          First Name
-                        </label>
-                        <input
-                          type="text"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          disabled={!isEditing}
-                          className={`w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border ${
-                            isEditing
-                              ? "border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-black"
-                              : "bg-gray-100 dark:bg-gray-700 dark:text-white"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold dark:text-white mb-2">
-                          Last Name
-                        </label>
-                        <input
-                          type="text"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          disabled={!isEditing}
-                          className={`w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border ${
-                            isEditing
-                              ? "border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-black"
-                              : "bg-gray-100 dark:bg-gray-700 dark:text-white"
-                          }`}
-                        />
-                      </div>
+                <form className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold dark:text-white mb-2">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border ${
+                          isEditing
+                            ? "border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-black"
+                            : "bg-gray-100 dark:bg-gray-700 dark:text-white"
+                        }`}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold dark:text-white mb-2">
-                        Email
+                        Last Name
                       </label>
                       <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border ${
+                          isEditing
+                            ? "border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-black"
+                            : "bg-gray-100 dark:bg-gray-700 dark:text-white"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold dark:text-white mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      disabled
+                      className="w-full p-3 rounded-lg border bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Email cannot be changed
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold dark:text-white mb-2">
+                      Phone Number
+                    </label>
+                    {isEditing ? (
+                      <PhoneInput
+                        country={"ng"}
+                        value={formData.phone}
+                        onChange={(phone) =>
+                          setFormData({ ...formData, phone: phone })
+                        }
+                        inputStyle={{
+                          width: "100%",
+                          height: "48px",
+                          fontSize: "16px",
+                          paddingLeft: "48px",
+                          borderRadius: "8px",
+                          border: "1px solid #d1d5db",
+                        }}
+                        buttonStyle={{
+                          borderRadius: "8px 0 0 8px",
+                          border: "1px solid #d1d5db",
+                        }}
+                        containerClass="phone-input-container"
+                        disabled={!isEditing}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData.phone}
                         disabled
                         className="w-full p-3 rounded-lg border bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Email cannot be changed
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold dark:text-white mb-2">
-                        Phone Number
-                      </label>
-                      {isEditing ? (
-                        <PhoneInput
-                          country={"ng"}
-                          value={formData.phone}
-                          onChange={(phone) =>
-                            setFormData({ ...formData, phone: phone })
-                          }
-                          inputStyle={{
-                            width: "100%",
-                            height: "48px",
-                            fontSize: "16px",
-                            paddingLeft: "48px",
-                            borderRadius: "8px",
-                            border: "1px solid #d1d5db",
-                          }}
-                          buttonStyle={{
-                            borderRadius: "8px 0 0 8px",
-                            border: "1px solid #d1d5db",
-                          }}
-                          containerClass="phone-input-container"
-                          disabled={!isEditing}
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          value={formData.phone}
-                          disabled
-                          className="w-full p-3 rounded-lg border bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
-                        />
-                      )}
-                    </div>
-                    {isEditing && (
-                      <button
-                        type="button"
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold disabled:opacity-50"
-                      >
-                        {loading ? "Saving..." : "Save Changes"}
-                      </button>
                     )}
-                  </form>
-                </motion.div>
-              )}
-
-              {activeTab === "addresses" && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold dark:text-white">
-                      My Addresses
-                    </h2>
-                    <button
-                      onClick={() => setShowAddressForm(!showAddressForm)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                    >
-                      <Plus size={20} />
-                      <span>Add Address</span>
-                    </button>
                   </div>
-
-                  {showAddressForm && (
-                    <form
-                      onSubmit={handleAddressSubmit}
-                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-4"
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold disabled:opacity-50"
                     >
+                      {loading ? "Saving..." : "Save Changes"}
+                    </button>
+                  )}
+                </form>
+              </motion.div>
+            )}
+
+            {activeTab === "addresses" && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold dark:text-white">
+                    My Addresses
+                  </h2>
+                  <button
+                    onClick={() => setShowAddressForm(!showAddressForm)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  >
+                    <Plus size={20} />
+                    <span>Add Address</span>
+                  </button>
+                </div>
+
+                {showAddressForm && (
+                  <form
+                    onSubmit={handleAddressSubmit}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-4"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Street Address"
+                      value={addressForm.street}
+                      onChange={(e) =>
+                        setAddressForm({
+                          ...addressForm,
+                          street: e.target.value,
+                        })
+                      }
+                      className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
+                      required
+                    />
+                    <div className="grid md:grid-cols-2 gap-4">
                       <input
                         type="text"
-                        placeholder="Street Address"
-                        value={addressForm.street}
+                        placeholder="City"
+                        value={addressForm.city}
                         onChange={(e) =>
                           setAddressForm({
                             ...addressForm,
-                            street: e.target.value,
+                            city: e.target.value,
                           })
                         }
                         className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
                         required
                       />
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <input
-                          type="text"
-                          placeholder="City"
-                          value={addressForm.city}
-                          onChange={(e) =>
-                            setAddressForm({
-                              ...addressForm,
-                              city: e.target.value,
-                            })
-                          }
-                          className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="State"
-                          value={addressForm.state}
-                          onChange={(e) =>
-                            setAddressForm({
-                              ...addressForm,
-                              state: e.target.value,
-                            })
-                          }
-                          className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
-                          required
-                        />
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <input
-                          type="text"
-                          placeholder="Postal Code"
-                          value={addressForm.postalCode}
-                          onChange={(e) =>
-                            setAddressForm({
-                              ...addressForm,
-                              postalCode: e.target.value,
-                            })
-                          }
-                          className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="Country"
-                          value={addressForm.country}
-                          onChange={(e) =>
-                            setAddressForm({
-                              ...addressForm,
-                              country: e.target.value,
-                            })
-                          }
-                          className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
-                      >
-                        {editingAddressId ? "Update Address" : "Save Address"}
-                      </button>
-                    </form>
-                  )}
-
-                  <div className="space-y-4">
-                    {addresses.length === 0 ? (
-                      <p className="text-center text-gray-600 dark:text-gray-300 py-8">
-                        No addresses saved yet. Add one to complete your
-                        profile!
-                      </p>
-                    ) : (
-                      addresses.map((addr) => (
-                        <div
-                          key={addr.$id}
-                          className="border dark:border-gray-600 p-4 rounded-lg relative"
-                        >
-                          {addr.isDefault && (
-                            <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1">
-                              <Check size={12} />
-                              <span>Default</span>
-                            </span>
-                          )}
-                          <p className="font-semibold dark:text-white">
-                            {addr.street}
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-300">
-                            {addr.city}, {addr.state} {addr.postalCode}
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-300">
-                            {addr.country}
-                          </p>
-                          <div className="flex space-x-2 mt-4">
-                            {!addr.isDefault && (
-                              <button
-                                onClick={() => handleSetDefault(addr.$id)}
-                                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                              >
-                                Set Default
-                              </button>
-                            )}
-                            <button
-                              onClick={() => confirmDeleteAddress(addr.$id)}
-                              className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 flex items-center space-x-1"
-                            >
-                              <Trash2 size={14} />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === "orders" && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <h2 className="text-2xl font-bold dark:text-white">
-                    Order History
-                  </h2>
-
-                  {loadingOrders ? (
-                    <div className="text-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        Loading orders...
-                      </p>
-                    </div>
-                  ) : orders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <ShoppingBag
-                        size={64}
-                        className="mx-auto text-gray-300 dark:text-gray-600 mb-4"
+                      <input
+                        type="text"
+                        placeholder="State"
+                        value={addressForm.state}
+                        onChange={(e) =>
+                          setAddressForm({
+                            ...addressForm,
+                            state: e.target.value,
+                          })
+                        }
+                        className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
+                        required
                       />
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        No orders yet. Start shopping!
-                      </p>
-                      <Link href="/shop">
-                        <button className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-semibold">
-                          Browse Products
-                        </button>
-                      </Link>
                     </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        placeholder="Postal Code"
+                        value={addressForm.postalCode}
+                        onChange={(e) =>
+                          setAddressForm({
+                            ...addressForm,
+                            postalCode: e.target.value,
+                          })
+                        }
+                        className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Country"
+                        value={addressForm.country}
+                        onChange={(e) =>
+                          setAddressForm({
+                            ...addressForm,
+                            country: e.target.value,
+                          })
+                        }
+                        className="w-full p-2.5 md:p-3 lg:p-3.5 text-sm md:text-base lg:text-lg text-gray-900 rounded-lg border"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+                    >
+                      {editingAddressId ? "Update Address" : "Save Address"}
+                    </button>
+                  </form>
+                )}
+
+                <div className="space-y-4">
+                  {addresses.length === 0 ? (
+                    <p className="text-center text-gray-600 dark:text-gray-300 py-8">
+                      No addresses saved yet. Add one to complete your profile!
+                    </p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
-                        <thead className="bg-gray-100 dark:bg-gray-700">
-                          <tr>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              Order ID
-                            </th>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              Date
-                            </th>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              Total
-                            </th>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              Status
-                            </th>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {orders.map((order) => (
-                            <React.Fragment key={order.$id}>
-                              <tr
-                                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                                onClick={() => handleToggleDetails(order.$id)}
-                              >
-                                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                                  {order.$id.slice(0, 8)}...
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                                  {new Date(order.date).toLocaleDateString()}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                                  ₦{order.total.toLocaleString()}
-                                </td>
-                                <td className="py-3 px-4 text-sm">
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      order.status === "Paid"
-                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                        : order.status === "Pending"
-                                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                    }`}
-                                  >
-                                    {order.status}
-                                  </span>
-                                </td>
-                                <td className="py-3 px-4 text-sm">
-                                  <button className="flex items-center text-black dark:text-white hover:underline">
-                                    View Details{" "}
-                                    <ChevronDown size={16} className="ml-1" />
-                                  </button>
+                    addresses.map((addr) => (
+                      <div
+                        key={addr.$id}
+                        className="border dark:border-gray-600 p-4 rounded-lg relative"
+                      >
+                        {addr.isDefault && (
+                          <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1">
+                            <Check size={12} />
+                            <span>Default</span>
+                          </span>
+                        )}
+                        <p className="font-semibold dark:text-white">
+                          {addr.street}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {addr.city}, {addr.state} {addr.postalCode}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {addr.country}
+                        </p>
+                        <div className="flex space-x-2 mt-4">
+                          {!addr.isDefault && (
+                            <button
+                              onClick={() => handleSetDefault(addr.$id)}
+                              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                            >
+                              Set Default
+                            </button>
+                          )}
+                          <button
+                            onClick={() => confirmDeleteAddress(addr.$id)}
+                            className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 flex items-center space-x-1"
+                          >
+                            <Trash2 size={14} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "orders" && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-2xl font-bold dark:text-white">
+                  Order History
+                </h2>
+
+                {loadingOrders ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Loading orders...
+                    </p>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingBag
+                      size={64}
+                      className="mx-auto text-gray-300 dark:text-gray-600 mb-4"
+                    />
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      No orders yet. Start shopping!
+                    </p>
+                    <Link href="/shop">
+                      <button className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-semibold">
+                        Browse Products
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+                      <thead className="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Order ID
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Date
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Total
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Status
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order) => (
+                          <React.Fragment key={order.$id}>
+                            <tr
+                              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                              onClick={() => handleToggleDetails(order.$id)}
+                            >
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                {order.$id.slice(0, 8)}...
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                {new Date(order.date).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                ₦{order.total.toLocaleString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    order.status === "Paid"
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                      : order.status === "Pending"
+                                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                  }`}
+                                >
+                                  {order.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <button className="flex items-center text-black dark:text-white hover:underline">
+                                  View Details{" "}
+                                  <ChevronDown size={16} className="ml-1" />
+                                </button>
+                              </td>
+                            </tr>
+                            {expandedOrderId === order.$id && (
+                              <tr>
+                                <td
+                                  colSpan="5"
+                                  className="py-4 px-4 bg-gray-50 dark:bg-gray-900"
+                                >
+                                  <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                                      Order Items
+                                    </h4>
+                                    {orderDetails[order.$id]?.length > 0 ? (
+                                      <ul className="space-y-2">
+                                        {orderDetails[order.$id].map((item) => (
+                                          <li
+                                            key={item.$id}
+                                            className="flex justify-between text-sm text-gray-700 dark:text-gray-300"
+                                          >
+                                            <span>
+                                              {item.name} (x{item.quantity})
+                                            </span>
+                                            <span>
+                                              ₦
+                                              {(
+                                                item.price * item.quantity
+                                              ).toLocaleString()}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Loading items...
+                                      </p>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
-                              {expandedOrderId === order.$id && (
-                                <tr>
-                                  <td
-                                    colSpan="5"
-                                    className="py-4 px-4 bg-gray-50 dark:bg-gray-900"
-                                  >
-                                    <div className="space-y-2">
-                                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                                        Order Items
-                                      </h4>
-                                      {orderDetails[order.$id]?.length > 0 ? (
-                                        <ul className="space-y-2">
-                                          {orderDetails[order.$id].map(
-                                            (item) => (
-                                              <li
-                                                key={item.$id}
-                                                className="flex justify-between text-sm text-gray-700 dark:text-gray-300"
-                                              >
-                                                <span>
-                                                  {item.name} (x{item.quantity})
-                                                </span>
-                                                <span>
-                                                  ₦
-                                                  {(
-                                                    item.price * item.quantity
-                                                  ).toLocaleString()}
-                                                </span>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      ) : (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                          Loading items...
-                                        </p>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              )}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </motion.div>
-              )}
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </motion.div>
+            )}
 
-              {activeTab === "settings" && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-6"
-                >
-                  <h2 className="text-2xl font-bold dark:text-white">
-                    Account Settings
-                  </h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                      <span className="font-medium dark:text-white">
-                        Change Password
-                      </span>
-                      <Link
-                        href="/forgot-password"
-                        className="text-black dark:text-white hover:underline"
+            {activeTab === "settings" && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-2xl font-bold dark:text-white">
+                  Account Settings
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span className="font-medium dark:text-white">
+                      Change Password
+                    </span>
+                    <Link
+                      href="/forgot-password"
+                      className="text-black dark:text-white hover:underline"
+                    >
+                      Manage
+                    </Link>
+                  </div>
+
+                  <div className="border-t dark:border-gray-600 pt-4 mt-6">
+                    <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
+                      Danger Zone
+                    </h3>
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <p className="text-sm text-red-800 dark:text-red-300 mb-3">
+                        Once you delete your account, there is no going back.
+                        All your data will be permanently deleted.
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
                       >
-                        Manage
-                      </Link>
-                    </div>
-
-                    <div className="border-t dark:border-gray-600 pt-4 mt-6">
-                      <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
-                        Danger Zone
-                      </h3>
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                        <p className="text-sm text-red-800 dark:text-red-300 mb-3">
-                          Once you delete your account, there is no going back.
-                          All your data will be permanently deleted.
-                        </p>
-                        <button
-                          onClick={() => setShowDeleteModal(true)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
-                        >
-                          Delete Account
-                        </button>
-                      </div>
+                        Delete Account
+                      </button>
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </div>
+                </div>
+              </motion.div>
+            )}
           </div>
-        </Suspense>
+        </div>
       </div>
 
       <ConfirmModal
@@ -932,6 +908,25 @@ const ProfilePage = () => {
         currentAvatar={user?.avatar}
       />
     </section>
+  );
+}
+
+const ProfilePage = () => {
+  return (
+    <Suspense
+      fallback={
+        <section className="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading your profile...
+            </p>
+          </div>
+        </section>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 };
 

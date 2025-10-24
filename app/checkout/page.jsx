@@ -11,7 +11,6 @@ import {
   createOrder,
   createOrderItems,
 } from "@/lib/appwrite";
-import { PaystackPaymentButton } from "@/components/PaystackPaymentButton";
 import { useRouter } from "next/navigation";
 
 const PaystackPaymentButton = dynamicImport(
