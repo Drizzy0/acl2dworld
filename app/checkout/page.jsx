@@ -15,7 +15,17 @@ import { useRouter } from "next/navigation";
 
 const PaystackPaymentButton = dynamicImport(
   () => import("@/components/PaystackPaymentButton"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <button
+        disabled
+        className="bg-gray-400 text-white px-4 py-3 rounded-lg w-full"
+      >
+        Loading payment...
+      </button>
+    ),
+  }
 );
 
 const CheckoutPage = () => {

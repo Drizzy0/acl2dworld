@@ -40,6 +40,9 @@ import { uploadAvatar, deleteUserAccount } from "@/lib/appwrite";
 
 const PhoneInput = dynamicImport(() => import("react-phone-input-2"), {
   ssr: false,
+  loading: () => (
+    <div className="w-full p-3 rounded-lg border bg-gray-100">Loading...</div>
+  ),
 });
 
 function ProfileContent() {
