@@ -1,7 +1,7 @@
 "use client";
 import { PaystackButton } from "react-paystack";
 
-export const PaystackPaymentButton = ({
+const PaystackPaymentButton = ({
   email,
   amount,
   name,
@@ -35,3 +35,5 @@ export const PaystackPaymentButton = ({
     />
   );
 };
+
+export default PaystackPaymentButton;
