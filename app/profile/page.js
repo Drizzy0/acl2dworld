@@ -13,10 +13,11 @@ import {
   Trash2,
   Check,
   Camera,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 import {
   account,
@@ -28,6 +29,8 @@ import {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
+  getUserOrders,
+  getOrderItems,
 } from "@/lib/appwrite";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -37,8 +40,13 @@ import { uploadAvatar, deleteUserAccount } from "@/lib/appwrite";
 
 const ProfilePage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user: contextUser, setUser: setContextUser } = useUser();
 
+  const [orders, setOrders] = useState([]);
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [orderDetails, setOrderDetails] = useState({});
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -108,6 +116,57 @@ const ProfilePage = () => {
 
     loadUserData();
   }, [contextUser, router]);
+
+  useEffect(() => {
+    if (activeTab === "orders" && user) {
+      loadOrders();
+    }
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && tabs.some((t) => t.id === tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (activeTab === "orders" && user && user.userId) {
+      loadOrders();
+    }
+  }, [activeTab, user]);
+
+  async function loadOrders() {
+    setLoadingOrders(true);
+    try {
+      const userOrders = await getUserOrders(user.userId);
+      setOrders(userOrders);
+    } catch (error) {
+      console.error("Failed to load orders:", error);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoadingOrders(false);
+    }
+  }
+
+  const handleToggleDetails = async (orderId) => {
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+      return;
+    }
+
+    setExpandedOrderId(orderId);
+
+    if (!orderDetails[orderId]) {
+      try {
+        const items = await getOrderItems(orderId);
+        setOrderDetails((prev) => ({ ...prev, [orderId]: items }));
+      } catch (error) {
+        console.error("Failed to load order items:", error);
+        toast.error("Failed to load order details");
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -657,20 +716,131 @@ const ProfilePage = () => {
                 <h2 className="text-2xl font-bold dark:text-white">
                   Order History
                 </h2>
-                <div className="text-center py-12">
-                  <ShoppingBag
-                    size={64}
-                    className="mx-auto text-gray-300 dark:text-gray-600 mb-4"
-                  />
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    No orders yet. Start shopping!
-                  </p>
-                  <Link href="/shop">
-                    <button className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-semibold">
-                      Browse Products
-                    </button>
-                  </Link>
-                </div>
+
+                {loadingOrders ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Loading orders...
+                    </p>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingBag
+                      size={64}
+                      className="mx-auto text-gray-300 dark:text-gray-600 mb-4"
+                    />
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      No orders yet. Start shopping!
+                    </p>
+                    <Link href="/shop">
+                      <button className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-semibold">
+                        Browse Products
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+                      <thead className="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Order ID
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Date
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Total
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Status
+                          </th>
+                          <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order) => (
+                          <React.Fragment key={order.$id}>
+                            <tr
+                              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                              onClick={() => handleToggleDetails(order.$id)}
+                            >
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                {order.$id.slice(0, 8)}...
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                {new Date(order.date).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                                ₦{order.total.toLocaleString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    order.status === "Paid"
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                      : order.status === "Pending"
+                                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                  }`}
+                                >
+                                  {order.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <button className="flex items-center text-black dark:text-white hover:underline">
+                                  View Details{" "}
+                                  <ChevronDown size={16} className="ml-1" />
+                                </button>
+                              </td>
+                            </tr>
+                            {expandedOrderId === order.$id && (
+                              <tr>
+                                <td
+                                  colSpan="5"
+                                  className="py-4 px-4 bg-gray-50 dark:bg-gray-900"
+                                >
+                                  <div className="space-y-2">
+                                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                                      Order Items
+                                    </h4>
+                                    {orderDetails[order.$id]?.length > 0 ? (
+                                      <ul className="space-y-2">
+                                        {orderDetails[order.$id].map((item) => (
+                                          <li
+                                            key={item.$id}
+                                            className="flex justify-between text-sm text-gray-700 dark:text-gray-300"
+                                          >
+                                            <span>
+                                              {item.name} (x{item.quantity})
+                                            </span>
+                                            <span>
+                                              ₦
+                                              {(
+                                                item.price * item.quantity
+                                              ).toLocaleString()}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Loading items...
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -696,7 +866,6 @@ const ProfilePage = () => {
                     </Link>
                   </div>
 
-                  {/* Add Delete Account */}
                   <div className="border-t dark:border-gray-600 pt-4 mt-6">
                     <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
                       Danger Zone

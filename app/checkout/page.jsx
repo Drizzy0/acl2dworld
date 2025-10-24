@@ -1,12 +1,21 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useCart } from "@/contexts/CartContext";
 import { ArrowLeft, CreditCard, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "react-toastify";
+import { useCart } from "@/contexts/CartContext";
+import { useUser } from "@/contexts/UserContext";
+import {
+  getUserAddresses,
+  createOrder,
+  createOrderItems,
+} from "@/lib/appwrite";
+import { PaystackPaymentButton } from "@/components/PaystackPaymentButton";
+import { useRouter } from "next/navigation";
 
 const CheckoutPage = () => {
-  const { cartItems, totalPrice } = useCart();
+  const { cartItems, totalPrice, clearCart } = useCart();
+  const { user: currentUser } = useUser();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -18,15 +27,76 @@ const CheckoutPage = () => {
     postalCode: "",
     promoCode: "",
   });
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [appliedPromo, setAppliedPromo] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadUserData() {
+      if (currentUser) {
+        setFormData((prev) => ({
+          ...prev,
+          firstName: currentUser?.document?.firstName || "",
+          lastName: currentUser?.document?.lastName || "",
+          email: currentUser?.document?.email || "",
+          phone: currentUser?.document?.phoneNumber || "",
+        }));
+
+        try {
+          const userAddresses = await getUserAddresses(
+            currentUser?.document?.userId
+          );
+          setAddresses(userAddresses);
+
+          let defaultAddr = userAddresses.find((addr) => addr.isDefault);
+          if (!defaultAddr && userAddresses.length > 0) {
+            defaultAddr = userAddresses[0];
+          }
+
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.$id);
+            setFormData((prev) => ({
+              ...prev,
+              address: defaultAddr.street || "",
+              city: defaultAddr.city || "",
+              state: defaultAddr.state || "",
+              postalCode: defaultAddr.postalCode || "",
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to load addresses:", error);
+          toast.error("Failed to load addresses. Please enter manually.");
+        }
+      }
+      setIsLoading(false);
+    }
+
+    loadUserData();
+  }, [currentUser]);
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleAddressChange = (e) => {
+    const selectedAddr = addresses.find((addr) => addr.$id === e.target.value);
+    if (selectedAddr) {
+      setSelectedAddressId(selectedAddr.$id);
+      setFormData((prev) => ({
+        ...prev,
+        address: selectedAddr.street || "",
+        city: selectedAddr.city || "",
+        state: selectedAddr.state || "",
+        postalCode: selectedAddr.postalCode || "",
+      }));
+    }
   };
 
   const handleApplyPromo = (e) => {
@@ -71,6 +141,19 @@ const CheckoutPage = () => {
               Continue Shopping
             </Link>
           </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">
+            Loading checkout details...
+          </p>
         </div>
       </section>
     );
@@ -136,6 +219,42 @@ const CheckoutPage = () => {
                   required
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
                 />
+                {addresses.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold dark:text-white mb-2">
+                      Select Saved Address
+                    </label>
+                    <select
+                      value={selectedAddressId || ""}
+                      onChange={handleAddressChange}
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    >
+                      <option value="">Use a new address</option>
+                      {addresses.map((addr) => (
+                        <option key={addr.$id} value={addr.$id}>
+                          {addr.street}, {addr.city}, {addr.state}{" "}
+                          {addr.postalCode} {addr.isDefault ? "(Default)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Or edit the fields below as needed.
+                    </p>
+                  </div>
+                )}
+
+                {!addresses.length && currentUser && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    No saved addresses found. Enter details below or{" "}
+                    <Link
+                      href="/profile"
+                      className="text-blue-600 hover:underline"
+                    >
+                      add in profile
+                    </Link>
+                    .
+                  </p>
+                )}
                 <input
                   type="text"
                   name="address"
@@ -251,17 +370,53 @@ const CheckoutPage = () => {
                 Payment
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                We'll integrate secure Paystack payment here.
+                Complete your payment securely via Paystack.
               </p>
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold disabled:opacity-50"
-              >
-                {isSubmitting
-                  ? "Processing..."
-                  : `Pay ₦${finalTotal.toLocaleString()}`}
-              </button>
+              <PaystackPaymentButton
+                email={formData.email}
+                amount={Math.round(Number(finalTotal) * 100)}
+                name={`${formData.firstName} ${formData.lastName}`}
+                onSuccess={async (response) => {
+                  try {
+                    console.log("💳 Payment successful:", response);
+
+                    const order = await createOrder(
+                      currentUser.document.userId,
+                      formData.email,
+                      {
+                        total: finalTotal,
+                        addressId: selectedAddressId,
+                        promoCode: formData.promoCode,
+                        discount: promoDiscount,
+                        status: "Paid",
+                      }
+                    );
+
+                    console.log("✅ Order created:", order);
+
+                    await createOrderItems(
+                      order.$id,
+                      currentUser.document.userId,
+                      cartItems
+                    );
+
+                    console.log("✅ Order items created");
+
+                    clearCart();
+                    toast.success("Order placed successfully!");
+                    setTimeout(() => {
+                      router.push("/profile?tab=orders");
+                    }, 500);
+                  } catch (error) {
+                    console.error("❌ Order creation failed:", error);
+                    toast.error(
+                      "Payment received but order failed. Please contact support with reference: " +
+                        response.reference
+                    );
+                  }
+                }}
+                onClose={() => toast.info("Payment window closed")}
+              />
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-sm">

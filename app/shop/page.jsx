@@ -88,6 +88,7 @@ const ShopPage = () => {
       const normalizedProducts = fetchedProducts.map((product) => ({
         ...product,
         id: product.$id,
+        images: product.images || [product.imageUrl],
       }));
       setNewArrivals(normalizedProducts);
     } catch (error) {
@@ -231,7 +232,7 @@ const ShopPage = () => {
                     <img
                       src={img}
                       alt={`${selectedItem.name} view ${index + 1}`}
-                      className="w-full h-64 object-cover rounded-lg mx-auto"
+                      className="w-full h-72 object-cover rounded-lg mx-auto"
                       onError={(e) => {
                         e.target.src = "/placeholder.png";
                       }}
