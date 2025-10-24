@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "react-toastify";
@@ -12,6 +13,11 @@ import {
 } from "@/lib/appwrite";
 import { PaystackPaymentButton } from "@/components/PaystackPaymentButton";
 import { useRouter } from "next/navigation";
+
+const PaystackPaymentButton = dynamic(
+  () => import("@/components/PaystackPaymentButton"),
+  { ssr: false }
+);
 
 const CheckoutPage = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
@@ -438,3 +444,5 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+
+export const dynamic = "force-dynamic";
