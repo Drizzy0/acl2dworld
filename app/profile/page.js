@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   User,
@@ -39,7 +39,9 @@ import ConfirmModal from "@/components/ConfirmModal";
 import AvatarUploadModal from "@/components/AvatarUploadModal";
 import { uploadAvatar, deleteUserAccount } from "@/lib/appwrite";
 
-const PhoneInput = dynamic(() => import("react-phone-input-2"), { ssr: false });
+const PhoneInput = dynamicImport(() => import("react-phone-input-2"), {
+  ssr: false,
+});
 
 const ProfilePage = () => {
   const router = useRouter();

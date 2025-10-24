@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "react-toastify";
@@ -14,7 +14,7 @@ import {
 import { PaystackPaymentButton } from "@/components/PaystackPaymentButton";
 import { useRouter } from "next/navigation";
 
-const PaystackPaymentButton = dynamic(
+const PaystackPaymentButton = dynamicImport(
   () => import("@/components/PaystackPaymentButton"),
   { ssr: false }
 );
