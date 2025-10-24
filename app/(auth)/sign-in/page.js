@@ -28,7 +28,7 @@ export default function SignIn() {
   const [countdown, setCountdown] = useState(0);
   const [resendEmail, setResendEmail] = useState("");
   const router = useRouter();
-  const user = useUser();
+  const { user } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,50 +39,43 @@ export default function SignIn() {
       await logoutUser();
 
       const session = await loginUser(email, password);
-      console.log("✅ Session created:", session);
+      console.log("✅ Session created");
 
       await new Promise((r) => setTimeout(r, 800));
 
-      const user = await account.get();
-      console.log("✅ Got user:", user.$id);
+      const currentUser = await account.get();
+      console.log("✅ Got user:", currentUser.$id);
 
-      if (!user.emailVerification) {
+      if (!currentUser.emailVerification) {
         setError("Please verify your email before signing in.");
         setShowResend(true);
         setResendEmail(email);
         await logoutUser();
+        setLoading(false);
         return;
       }
 
-      let userDoc = await getUserDocument(user.$id);
+      let userDoc = await getUserDocument(currentUser.$id);
 
       if (!userDoc) {
         console.log("📄 No user document found. Creating one...");
-
         userDoc = await createUserDocument(
-          user.$id,
-          user.name.split(" ")[0] || "User",
-          user.name.split(" ")[1] || "",
-          user.email
+          currentUser.$id,
+          currentUser.name.split(" ")[0] || "User",
+          currentUser.name.split(" ")[1] || "",
+          currentUser.email
         );
-
         console.log("✅ User document created after login:", userDoc.$id);
       }
 
       toast.success("Login successful! Redirecting...");
 
-      setLoading(true);
-
-      if (userDoc.role === "admin") {
+      if (userDoc.role === "Admin") {
         console.log("➡️ Redirecting to /dashboard");
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
+        window.location.href = "/dashboard";
       } else {
-        console.log("➡️ Redirecting to /home");
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1000);
+        console.log("➡️ Redirecting to /");
+        window.location.href = "/";
       }
     } catch (error) {
       console.error(`❌ Sign-in failed for ${email}: ${error.message}`);
@@ -130,26 +123,45 @@ export default function SignIn() {
 
   useEffect(() => {
     async function checkSession() {
-      if (!user) return; 
-
+      setChecking(true);
       try {
-        if (!user.emailVerification) {
+        const currentUser = await account.get();
+        console.log(
+          "ℹ️ Active session found during initial check:",
+          currentUser.email
+        );
+
+        if (!currentUser.emailVerification) {
+          setError("Please verify your email before signing in.");
           await logoutUser();
           return;
         }
 
-        if (user.document?.role === "Admin") {
+        const userDoc = await getUserDocument(currentUser.$id);
+        if (!userDoc) return;
+
+        await refreshUser();
+
+        if (userDoc.role === "Admin") {
+          console.log("➡️ Initial check: Redirecting admin to /dashboard");
           router.push("/dashboard");
         } else {
+          console.log("➡️ Initial check: Redirecting user to /");
           router.push("/");
         }
       } catch (err) {
-        console.error("Check session error:", err);
+        if (err.code === 401) {
+          console.log("ℹ️ No active session during initial check");
+        } else {
+          console.error("❌ Initial session check error:", err.message);
+        }
+      } finally {
+        setChecking(false);
       }
     }
 
     checkSession();
-  }, [user, router]);
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 relative overflow-hidden">

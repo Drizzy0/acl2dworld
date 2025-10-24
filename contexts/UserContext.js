@@ -8,30 +8,41 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  useEffect(() => {
-    async function getUser() {
-      try {
-        const currentUser = await account.get();
-        const userDoc = await getUserDocument(currentUser.$id);
+  const fetchUser = async () => {
+    try {
+      const currentUser = await account.get();
+      const userDoc = await getUserDocument(currentUser.$id);
 
-        setUser({
-          ...currentUser,
-          document: userDoc,
-        });
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setLoadingUser(false);
-      }
+      setUser({
+        ...currentUser,
+        document: userDoc,
+      });
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setLoadingUser(false);
     }
-    getUser();
+  };
+
+  useEffect(() => {
+    fetchUser();
   }, []);
 
+  const refreshUser = async () => {
+    await fetchUser();
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser, loadingUser }}>
+    <UserContext.Provider value={{ user, setUser, loadingUser, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser must be used within a UserProvider");
+  }
+  return context;
+};

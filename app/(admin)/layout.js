@@ -10,16 +10,20 @@ import {
   IconMenu2,
   IconX,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/UserContext";
 import Link from "next/link";
+import { logoutUser } from "@/lib/appwrite";
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loadingUser } = useUser();
+  const router = useRouter();
 
   const links = [
     {
@@ -50,18 +54,50 @@ export default function AdminLayout({ children }) {
         <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-    {
-      label: "Settings",
-      href: "/settings",
-      icon: (
-        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
   ];
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+
+      localStorage.removeItem("user");
+
+      router.push("/sign-in");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (loadingUser) return;
+
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+
+    if (user.document?.role !== "Admin") {
+      router.push("/");
+      return;
+    }
+  }, [user, loadingUser, router]);
+
+  if (!user || loadingUser) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">
+            Loading admin panel...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
@@ -70,10 +106,14 @@ export default function AdminLayout({ children }) {
           <h1 className="text-lg md:text-xl font-bold">ACL Admin</h1>
         </Link>
         <div className="flex items-center gap-3 md:gap-4">
-          <button className="hidden md:flex items-center gap-2 hover:bg-gray-700/50 px-2 md:px-3 py-1 rounded transition-colors text-sm md:text-base">
+          <button
+            onClick={handleLogout}
+            className="hidden md:flex items-center gap-2 hover:bg-gray-700/50 px-2 md:px-3 py-1 rounded transition-colors text-sm md:text-base"
+          >
             <IconLogout size={20} />
-            Logout
+            Sign Out
           </button>
+
           <button className="md:hidden" onClick={toggleMobileMenu}>
             {isMobileMenuOpen ? <IconX size={24} /> : <IconMenu2 size={24} />}
           </button>
@@ -137,11 +177,11 @@ export default function AdminLayout({ children }) {
               })}
             </div>
             <button
-              className="mt-auto flex items-center gap-2 text-white py-2 px-4 hover:bg-gray-700/50 rounded transition-colors"
-              onClick={toggleMobileMenu}
+              onClick={handleLogout}
+              className="hidden md:flex items-center gap-2 hover:bg-gray-700/50 px-2 md:px-3 py-1 rounded transition-colors text-sm md:text-base"
             >
               <IconLogout size={20} />
-              Logout
+              Signout
             </button>
           </motion.div>
         )}

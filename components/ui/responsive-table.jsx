@@ -42,9 +42,9 @@ export default function ResponsiveTable({ columns, data, type = "record" }) {
               </td>
             </tr>
           )}
-          {data.map((row, idx) => (
+          {data.map((row) => (
             <tr
-              key={idx}
+              key={row.id || row.$id}
               className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
             >
               {columns.map((col) => (

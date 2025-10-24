@@ -3,12 +3,27 @@ import React, { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Slider from "react-slick";
 import { toast } from "react-toastify";
+import { getAllProducts } from "@/lib/appwrite";
 
 const ShopPage = () => {
   const { addToCart, getAvailableStock } = useCart();
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newArrivals, setNewArrivals] = useState([]);
+  const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
+    inStockOnly: false,
+  });
+
+  const filteredProducts = newArrivals.filter((product) => {
+    const meetsPrice =
+      (!filters.minPrice || product.price >= parseFloat(filters.minPrice)) &&
+      (!filters.maxPrice || product.price <= parseFloat(filters.maxPrice));
+    const meetsStock =
+      !filters.inStockOnly || getAvailableStock(product.id) > 0;
+    return meetsPrice && meetsStock;
+  });
 
   const openModal = (item) => {
     const availableStock = getAvailableStock(item.id);
@@ -64,11 +79,22 @@ const ShopPage = () => {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("products");
-      setNewArrivals(saved ? JSON.parse(saved) : []);
-    }
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const fetchedProducts = await getAllProducts();
+      const normalizedProducts = fetchedProducts.map((product) => ({
+        ...product,
+        id: product.$id,
+      }));
+      setNewArrivals(normalizedProducts);
+    } catch (error) {
+      toast.error("Failed to load products");
+      console.error(error);
+    }
+  };
 
   return (
     <section className="py-12">
@@ -76,6 +102,40 @@ const ShopPage = () => {
         <h2 className="text-4xl font-bold text-center mb-8 dark:text-white">
           All Products
         </h2>
+
+        <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <h3 className="font-semibold mb-3 dark:text-white">Filters</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input
+              type="number"
+              placeholder="Min Price"
+              value={filters.minPrice}
+              onChange={(e) =>
+                setFilters({ ...filters, minPrice: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <input
+              type="number"
+              placeholder="Max Price"
+              value={filters.maxPrice}
+              onChange={(e) =>
+                setFilters({ ...filters, maxPrice: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <label className="flex items-center gap-2 dark:text-white">
+              <input
+                type="checkbox"
+                checked={filters.inStockOnly}
+                onChange={(e) =>
+                  setFilters({ ...filters, inStockOnly: e.target.checked })
+                }
+              />
+              In Stock Only
+            </label>
+          </div>
+        </div>
 
         {newArrivals.length === 0 ? (
           <div className="h-[50vh] flex items-center justify-center">
@@ -85,7 +145,7 @@ const ShopPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {newArrivals.map((item) => {
+            {filteredProducts.map((item) => {
               const stock = getAvailableStock(item.id);
               const isOutOfStock = stock === 0;
 
@@ -112,7 +172,7 @@ const ShopPage = () => {
                     </div>
                   )}
                   <img
-                    src={item.images?.[0] || item.image || "/placeholder.png"}
+                    src={item.imageUrl || "/placeholder.png"}
                     alt={item.name}
                     className="w-full h-48 object-cover"
                     onError={(e) => {

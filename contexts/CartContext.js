@@ -1,11 +1,13 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { getAllProducts } from "@/lib/appwrite";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,13 +34,34 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchedProducts = await getAllProducts();
+        const normalizedProducts = fetchedProducts.map((product) => ({
+          ...product,
+          id: product.$id,
+        }));
+        setProducts(normalizedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const getAvailableStock = (productId) => {
-    if (typeof window !== "undefined") {
-      const products = JSON.parse(localStorage.getItem("products") || "[]");
-      const product = products.find((p) => p.id === productId);
-      return product?.stock || 0;
-    }
-    return 0;
+    const product = products.find(
+      (p) => p.$id === productId || p.id === productId
+    );
+    if (!product) return 0;
+
+    const cartItem = cartItems.find((item) => item.id === productId);
+    const inCart = cartItem ? cartItem.quantity : 0;
+
+    return product.stock - inCart;
   };
 
   const addToCart = (item) => {

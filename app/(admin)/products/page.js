@@ -13,18 +13,20 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "react-toastify";
 import ResponsiveTable from "@/components/ui/responsive-table";
 import ConfirmModal from "@/components/ui/confirm-modal";
+import {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImage,
+} from "@/lib/appwrite";
 
 export default function AdminProducts() {
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [products, setProducts] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("products");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -32,52 +34,111 @@ export default function AdminProducts() {
     image: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
+
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const handleSubmit = (e) => {
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const updatedData = {
-      name: formData.name,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      images: formData.image ? [formData.image] : [],
-    };
 
-    if (editingId) {
-      setProducts(
-        products.map((p) => (p.id === editingId ? { ...p, ...updatedData } : p))
+    try {
+      let imageUrl = formData.image;
+
+      if (formData.imageFile) {
+        imageUrl = await uploadProductImage(
+          editingId || "temp",
+          formData.imageFile
+        );
+      }
+
+      const productData = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        imageUrl: imageUrl,
+        description: formData.description || "",
+      };
+
+      if (editingId) {
+        await updateProduct(editingId, productData);
+        toast.success("Product updated!");
+      } else {
+        await createProduct(productData);
+        toast.success("Product added!");
+      }
+
+      await fetchProducts();
+      setIsOpen(false);
+      setEditingId(null);
+      setFormData({
+        name: "",
+        price: "",
+        stock: "",
+        image: "",
+        imageFile: null,
+        description: "",
+      });
+    } catch (error) {
+      toast.error(
+        editingId ? "Failed to update product" : "Failed to add product"
       );
-      toast.success("Product updated!");
-    } else {
-      const newProduct = { id: Date.now(), ...updatedData };
-      setProducts([...products, newProduct]);
-      toast.success("Product added!");
+      console.error(error);
     }
-
-    setIsOpen(false);
-    setEditingId(null);
-    setFormData({ name: "", price: "", stock: "", image: "" });
   };
   const handleEdit = (product) => {
     setFormData({
       name: product.name,
       price: product.price,
       stock: product.stock,
-      image: product.images?.[0] || "",
+      image: product.imageUrl || "",
     });
-    setEditingId(product.id);
+    setEditingId(product.$id);
     setIsOpen(true);
   };
 
-  const confirmDeleteAction = () => {
-    setProducts(products.filter((p) => p.id !== confirmDelete));
-    toast.error("Product deleted!");
-    setConfirmDelete(null);
+  const confirmDeleteAction = async () => {
+    try {
+      await deleteProduct(confirmDelete);
+      toast.success("Product deleted!");
+      await fetchProducts();
+    } catch (error) {
+      toast.error("Failed to delete product");
+      console.error(error);
+    } finally {
+      setConfirmDelete(null);
+    }
   };
 
   const handleDelete = (id) => {
     setConfirmDelete(id);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedProducts = await getAllProducts();
+      setProducts(fetchedProducts);
+    } catch (error) {
+      toast.error("Failed to load products");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const columns = [
@@ -86,7 +147,7 @@ export default function AdminProducts() {
       label: "Image",
       render: (row) => (
         <img
-          src={row.images?.[0] || "/placeholder.png"}
+          src={row.imageUrl || "/placeholder.png"}
           alt={row.name}
           className="w-10 h-10 md:w-12 md:h-12 object-cover rounded"
         />
@@ -104,30 +165,23 @@ export default function AdminProducts() {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            className="bg-yellow-500 hover:bg-yellow-600 text-white"
+          <button
+            className="px-3 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition-colors"
             onClick={() => handleEdit(row)}
           >
             Edit
-          </Button>
-          <Button
-            size="sm"
-            className="bg-red-500 hover:bg-red-600 text-white"
-            onClick={() => handleDelete(row.id)}
+          </button>
+          <button
+            className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+            onClick={() => handleDelete(row.$id)}
           >
             Delete
-          </Button>
+          </button>
         </div>
       ),
     },
   ];
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("products", JSON.stringify(products));
-    }
-  }, [products]);
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
@@ -152,44 +206,57 @@ export default function AdminProducts() {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  placeholders={["Name"]}
+                <input
+                  type="text"
+                  placeholder="Name"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
+                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   required
                 />
-                <Input
+
+                <input
                   type="number"
-                  placeholders={["Price"]}
+                  placeholder="Price"
                   value={formData.price}
                   onChange={(e) =>
                     setFormData({ ...formData, price: e.target.value })
                   }
+                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   required
                 />
-                <Input
+
+                <input
                   type="number"
-                  placeholders={["Stock"]}
+                  placeholder="Stock"
                   value={formData.stock}
                   onChange={(e) =>
                     setFormData({ ...formData, stock: e.target.value })
                   }
+                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   required
                 />
+
                 <FileUpload
                   onChange={(files) => {
                     if (files.length > 0) {
                       const file = files[0];
+                      setFormData({ ...formData, imageFile: file });
+
                       const reader = new FileReader();
                       reader.onload = () => {
-                        setFormData({ ...formData, image: reader.result });
+                        setFormData((prev) => ({
+                          ...prev,
+                          image: reader.result,
+                        }));
                       };
                       reader.readAsDataURL(file);
                     }
                   }}
                 />
+
                 <Button type="submit" className="w-full">
                   Save
                 </Button>
@@ -209,10 +276,33 @@ export default function AdminProducts() {
       <div className="overflow-x-auto">
         <ResponsiveTable
           columns={columns}
-          data={filteredProducts}
+          data={currentProducts}
           type="product"
         />
       </div>
+      {filteredProducts.length > productsPerPage && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm dark:text-white">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
