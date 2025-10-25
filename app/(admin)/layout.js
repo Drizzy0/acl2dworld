@@ -160,7 +160,7 @@ export default function AdminLayout({ children }) {
                   pathname === link.href ||
                   pathname.startsWith(link.href + "/");
                 return (
-                  <a
+                  <Link
                     key={idx}
                     href={link.href}
                     className={cn(
@@ -172,7 +172,7 @@ export default function AdminLayout({ children }) {
                     onClick={toggleMobileMenu}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 );
               })}
             </div>

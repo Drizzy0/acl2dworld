@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -121,7 +122,7 @@ export const SidebarLink = ({ link, className, ...props }) => {
     pathname === link.href || pathname.startsWith(link.href + "/");
 
   return (
-    <a
+    <Link
       href={link.href}
       className={cn(
         "flex items-center justify-start gap-2 group/sidebar py-2 px-3 rounded-lg transition-all duration-200",
@@ -155,6 +156,6 @@ export const SidebarLink = ({ link, className, ...props }) => {
       >
         {link.label}
       </motion.span>
-    </a>
+    </Link>
   );
 };

@@ -29,6 +29,9 @@ export default function AdminOrders() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [orderItems, setOrderItems] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 10;
+  const [filteredOrders, setFilteredOrders] = useState([]);
 
   useEffect(() => {
     loadAllOrders();
@@ -39,6 +42,7 @@ export default function AdminOrders() {
       setLoading(true);
       const allOrders = await getAllOrders();
       setOrders(allOrders);
+      setFilteredOrders(allOrders);
     } catch (error) {
       console.error("Failed to load orders:", error);
       toast.error("Failed to load orders");
@@ -91,18 +95,23 @@ export default function AdminOrders() {
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = order.userEmail
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const filtered = orders.filter((order) => {
+      const matchesSearch = order.userEmail
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    const matchesDate = dateFilter
-      ? new Date(order.$createdAt).toLocaleDateString() ===
-        new Date(dateFilter).toLocaleDateString()
-      : true;
+      const matchesDate = dateFilter
+        ? new Date(order.$createdAt).toLocaleDateString() ===
+          new Date(dateFilter).toLocaleDateString()
+        : true;
 
-    return matchesSearch && matchesDate;
-  });
+      return matchesSearch && matchesDate;
+    });
+
+    setFilteredOrders(filtered);
+    setCurrentPage(1);
+  }, [orders, searchTerm, dateFilter]);
 
   const columns = [
     {
@@ -196,6 +205,11 @@ export default function AdminOrders() {
     );
   }
 
+  const indexOfLast = currentPage * ordersPerPage;
+  const indexOfFirst = indexOfLast - ordersPerPage;
+  const currentOrders = filteredOrders.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
@@ -257,7 +271,7 @@ export default function AdminOrders() {
                 </td>
               </tr>
             ) : (
-              filteredOrders.map((row) => (
+              currentOrders.map((row) => (
                 <>
                   <tr
                     key={row.$id}
@@ -314,6 +328,29 @@ export default function AdminOrders() {
         message="Are you sure you want to delete this order? This will also delete all order items. This action cannot be undone."
         isDangerous={true}
       />
+      {filteredOrders.length > ordersPerPage && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm dark:text-white">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
