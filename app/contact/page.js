@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Send, Clock } from "lucide-react";
 import { toast } from "react-toastify";
+import { useUser } from "@/contexts/UserContext";
 
 export default function ContactPage() {
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,6 +15,19 @@ export default function ContactPage() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user?.document) {
+      setFormData((prev) => ({
+        ...prev,
+        name: `${user.document.firstName || ""} ${
+          user.document.lastName || ""
+        }`.trim(),
+        email: user.document.email || "",
+        phone: user.document.phoneNumber || "",
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({
@@ -24,14 +39,40 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    console.log("Contact form data:", formData);
-    toast.success("Your message has been sent! We'll get back to you soon.");
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
-    setIsSubmitting(false);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(
+          "Your message has been sent! We'll get back to you soon."
+        );
+        setFormData((prev) => ({
+          ...prev,
+          subject: "",
+          message: "",
+        }));
+      } else {
+        toast.error(data.error || "Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error("Contact form error:", error);
+      toast.error("Something went wrong. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 relative z-[9999]">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 relative z-10">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold dark:text-white mb-4">
@@ -58,7 +99,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold dark:text-white">Email Us</h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      support@airclothing.com
+                      floriddasoftware@gmail.com
                     </p>
                   </div>
                 </div>
@@ -107,11 +148,18 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold dark:text-white mb-6">
                 Send Us a Message
               </h2>
+              {user?.document && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    ✓ Your information has been auto-filled
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold dark:text-white mb-2">
-                      Name
+                      Name *
                     </label>
                     <input
                       type="text"
@@ -125,7 +173,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold dark:text-white mb-2">
-                      Email
+                      Email *
                     </label>
                     <input
                       type="email"
@@ -153,7 +201,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold dark:text-white mb-2">
-                    Subject
+                    Subject *
                   </label>
                   <input
                     type="text"
@@ -167,7 +215,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold dark:text-white mb-2">
-                    Message
+                    Message *
                   </label>
                   <textarea
                     name="message"
@@ -176,13 +224,13 @@ export default function ContactPage() {
                     onChange={handleChange}
                     rows={5}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none"
                   ></textarea>
                 </div>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center space-x-2 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold disabled:opacity-50"
+                  className="w-full flex items-center justify-center space-x-2 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send size={20} />
                   <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
