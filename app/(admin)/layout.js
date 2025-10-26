@@ -76,12 +76,12 @@ export default function AdminLayout({ children }) {
     if (loadingUser) return;
 
     if (!user) {
-      router.push("/sign-in");
+      router.push("/unauthorized");
       return;
     }
 
     if (user.document?.role !== "Admin") {
-      router.push("/");
+      router.push("/unauthorized");
       return;
     }
   }, [user, loadingUser, router]);

@@ -84,7 +84,7 @@ function ProfileContent() {
     async function loadUserData() {
       try {
         if (!contextUser) {
-          router.push("/sign-in");
+          router.push("/unauthorized");
           return;
         }
 

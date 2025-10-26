@@ -1,21 +1,28 @@
-"use client"
+"use client";
 import { HeroParallaxDemo } from "@/components/hero-parallax-demo";
 import { MarqueeDemo } from "@/components/MarqueeDemo";
 import { PulsatingButton } from "@/components/magicui/pulsating-button";
 import Link from "next/link";
 import { useUser } from "@/contexts/UserContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { loadingUser } = useUser();
+  const { user, loadingUser } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loadingUser && user?.document?.role === "Admin") {
+      router.push("/dashboard");
+    }
+  }, [user, loadingUser, router]);
 
   if (loadingUser) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">
-            Loading page...
-          </p>
+          <p className="text-gray-600 dark:text-gray-300">Loading page...</p>
         </div>
       </div>
     );

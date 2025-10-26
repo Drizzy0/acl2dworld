@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuroraBackground } from "@/components/ui/aurora-background";
@@ -11,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { usePathname } from "next/navigation";
 import { CartProvider } from "@/contexts/CartContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { ShellContext } from "@/contexts/ShellContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,6 +27,8 @@ const geistMono = localFont({
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
+  const [hideShell, setHideShell] = useState(false);
+
   const isAdmin =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/orders") ||
@@ -37,7 +41,10 @@ export default function RootLayout({ children }) {
     pathname === "/sign-up" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password" ||
+    pathname === "/unauthorized" ||
     pathname === "/verify";
+
+  const showShell = !(isAdmin || isAuthPage || hideShell);
 
   return (
     <html lang="en">
@@ -46,16 +53,18 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <CartProvider>
-            {isAdmin || isAuthPage ? (
-              children
-            ) : (
-              <AuroraBackground>
-                <Navbar />
-                {children}
-                <Footer />
-              </AuroraBackground>
-            )}
-            <ToastContainer position="top-right" autoClose={3000} />
+            <ShellContext.Provider value={{ hideShell, setHideShell }}>
+              {showShell ? (
+                <AuroraBackground>
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </AuroraBackground>
+              ) : (
+                children
+              )}
+              <ToastContainer position="top-right" autoClose={3000} />
+            </ShellContext.Provider>
           </CartProvider>
         </UserProvider>
       </body>

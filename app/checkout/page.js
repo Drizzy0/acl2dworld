@@ -6,12 +6,12 @@ import { ArrowLeft, CreditCard, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "react-toastify";
 import { useCart } from "@/contexts/CartContext";
 import { useUser } from "@/contexts/UserContext";
+import { useRouter } from "next/navigation";
 import {
   getUserAddresses,
   createOrder,
   createOrderItems,
 } from "@/lib/appwrite";
-import { useRouter } from "next/navigation";
 
 const PaystackPaymentButton = dynamicImport(
   () => import("@/components/PaystackPaymentButton"),
@@ -31,6 +31,13 @@ const PaystackPaymentButton = dynamicImport(
 const CheckoutPage = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
   const { user: currentUser } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!currentUser) {
+      router.push("/unauthorized");
+    }
+  }, [currentUser, router]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -48,7 +55,6 @@ const CheckoutPage = () => {
   const [appliedPromo, setAppliedPromo] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     async function loadUserData() {
